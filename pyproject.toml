@@ -1,0 +1,36 @@
+[tool.poetry]
+# See for more information on the metadata:
+#   https://python-poetry.org/docs/pyproject/
+# The version entry must be present, however it is further ignored by the build
+# process; the version is automatically set by using ``poetry-dynamic-versioning``.
+name = "boi_verschil_en_effectanalyse"
+version = "0.0.0"
+description = "Add a short description here!"
+authors = ["Cas van Bemmelen <cas.van.bemmelen@witteveenbos.com>"]
+license = "Proprietary - Witteveen+Bos"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10 <3.14"
+matplotlib = "^3.10.8"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.15.10"
+pytest = "^7.2.1"
+
+[[tool.poetry.source]]
+name = "wb_pypi"
+url = "https://pypi.wbad.witteveenbos.com/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[tool.pyscaffold]
+# PyScaffold's parameters when the project was created.
+# This will be used when updating. Do not change!
+version = "4.5"
+package = "boi_verschil_effect"
+extensions = ["wb_simple"]
