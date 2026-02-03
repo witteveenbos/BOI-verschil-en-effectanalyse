@@ -242,4 +242,4 @@ if __name__ == "__main__":
     # main(locations="as")  # All locations with code 'as' from parent folder
     # main(watersysteem="Maas", locations=["as_0001"], simulation_types=['BI2023-totaal-met'])
     
-    main_frequentielijn(watersysteem="Maas", simulation_types=['BI2017-totaal-met', 'BI2023-totaal-met', 'BI2017-totaal-zon', 'BI2023-totaal-zon'] , locations=["036-01_0050"])
+    main_frequentielijn(watersysteem="Maas" , locations=["036-01_0050"])
