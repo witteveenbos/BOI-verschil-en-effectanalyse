@@ -15,10 +15,13 @@ package-mode = false
 python = "^3.11"
 matplotlib = "^3.10.8"
 pandas = "^3.0.0"
+geopandas = "^1.1.2"
+contextily = "^1.7.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.10"
 pytest = "^7.2.1"
+ipykernel = "^7.1.0"
 
 [[tool.poetry.source]]
 name = "wb_pypi"
