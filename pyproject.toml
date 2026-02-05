@@ -19,6 +19,7 @@ pandas = "^3.0.0"
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.10"
 pytest = "^7.2.1"
+ipykernel = "^7.1.0"
 
 [[tool.poetry.source]]
 name = "wb_pypi"
