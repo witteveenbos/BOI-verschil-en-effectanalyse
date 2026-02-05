@@ -1,4 +1,4 @@
-Hoe met Poetry de .toml te installeren (eerste deel HKV):
+Hoe met Poetry de .toml te installeren (tweede deel alleen HKV):
 - Stap 1: met TortoiseGit, zet de checkout lokaal op je computer
 - Stap 2 (HKV): Miniforge nieuwe environment aanmaken
     - Open miniforge, typ: mamba create -n naam_van_je_nieuwe_environment python=3.13
