@@ -20,19 +20,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import contextily as cx
 import matplotlib.patheffects as pe
-
-PARAMETERS = {
-    "WS":  ("Waterstand (m+NAP)", "waterstand", "m+NAP", "ws", "m"),
-    "HBN": ("HBN (m+NAP)",       "HBN",        "m+NAP", "hbn", "m"),
-    "Hs":  ("Hs (m)",            "Hs",         "m",     "hs",  "m"),
-    "Tp":  ("Tp (s)",            "Tp",         "s",     "tp",  "s"),
-}
+from utils.plotting_settings import parameters
 
 def get_parameter_settings(csv_path: str):
     """
     Determines parameter settings based on csv file name.
     """
-    for key, values in PARAMETERS.items():
+    for key, values in parameters.items():
         if key in csv_path:
             return values
 
