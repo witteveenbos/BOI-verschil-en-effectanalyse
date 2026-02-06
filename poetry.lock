@@ -144,6 +144,26 @@ files = [
 pycparser = {version = "*", markers = "implementation_name != \"PyPy\""}
 
 [[package]]
+name = "cmocean"
+version = "4.0.3"
+description = "Colormaps for Oceanography"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "cmocean-4.0.3-py3-none-any.whl", hash = "sha256:f2fc1d5e349db122ee0c9eac80bba969aa92dd2806548fce58dc8bef962f309e"},
+    {file = "cmocean-4.0.3.tar.gz", hash = "sha256:37868399fb5f41b4eac596e69803f9bfaea49946514dfb2e7f48886854250d7c"},
+]
+
+[package.dependencies]
+matplotlib = "*"
+numpy = "*"
+packaging = "*"
+
+[package.extras]
+plots = ["colorspacious", "viscm"]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -1755,4 +1775,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "a120c6178ef052f209f058befac63774e933754df01e193349633dd399c8f705"
+content-hash = "44afb13811f141f049157d0454ae0e26baeda013a733142e8bee289a6d8e46cf"
