@@ -22,11 +22,6 @@ pytest = "^7.2.1"
 ipykernel = "^7.1.0"
 
 [[tool.poetry.source]]
-name = "wb_pypi"
-url = "https://pypi.wbad.witteveenbos.com/simple/"
-priority = "primary"
-
-[[tool.poetry.source]]
 name = "PyPI"
 priority = "primary"
 
