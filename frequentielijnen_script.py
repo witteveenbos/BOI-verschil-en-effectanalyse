@@ -51,12 +51,13 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
 
     # setting base path and testing if it exists
     directory_path, save_dir = get_directories(company_name)
-    base_path = rf"{directory_path}\\HydraNL_Beoordelen_{prefix}_{watersysteem}"
+    base_path = rf"{directory_path}\HydraNL_Beoordelen_{prefix}_{watersysteem}"
 
-    if Path(base_path).exists():
-            print(f"Directory '{base_path}' exists.")
-    else:
-        raise FileNotFoundError(f"Directory '{base_path}' does not exist. Please check the path and try again.")
+    if company_name == 'W+B':
+        if Path(base_path).exists():
+                print(f"Directory '{base_path}' exists.")
+        else:
+            raise FileNotFoundError(f"Directory '{base_path}' does not exist. Please check the path and try again.")
 
     # Save all frequency, values of the chosen HydraNL outputs in a dictionary.
     # data_by_location[locationname][simulation_type] = (frequency, values), e.g. data_by_location['014-01_0017_HY_km0001']['2017-fysica-zon_HBN]
@@ -183,4 +184,4 @@ if __name__ == "__main__":
     # main_frequentielijn(watersysteem = 'Maas', simulation_types = ["2017-fysica-zon_WS", "2023-totaal-met_WS", "2017-totaal-zon_WS"], locations = ['036-01_0050_MA_km0160'], save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
     # Onderstaande regel plot terugkeertijden van waterstand ('WS') voor alle locaties van de Maas (zowel oever als as) en voor elke rekeninstelling.
     #main_frequentielijn(watersysteem = 'Maas', parameter='WS', save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
-    main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "W+B")
+    main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV", save_dir=r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
