@@ -8,3 +8,4 @@ Hoe met Poetry de .toml te installeren (tweede deel alleen HKV):
 - Stap 3: env installeren:
     - typ: cd /path/to/your/project (path van het project waar map waar de .toml in staat)
     - typ: poetry install
+test
