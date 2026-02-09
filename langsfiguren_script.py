@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import contextily as cx
 import matplotlib.patheffects as pe
 from utils.plotting_settings import parameters
+from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict
 
 def get_parameter_settings(csv_path: str):
     """
@@ -65,19 +66,11 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
 
     series_names = df["Serie"].unique()
 
-    # Create consistent color mapping per series
-    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-
-    color_map = {
-        serie: colors[i % len(colors)]
-        for i, serie in enumerate(series_names)
-    }
-
     # Find reference TODO: aanpassen naar naamgeving BOI
-    ref_candidates = [s for s in series_names if "NoWd" in s]
+    ref_candidates = [s for s in series_names if "BI2023-totaalBI-met" in s]
 
     if not ref_candidates:
-        raise ValueError("No Serie containing 'NoWd' found as reference.") #TODO: aanpassen naar naamgeving BOI
+        raise ValueError("No Serie containing 'BI2023-totaalBI-met' found as reference.") #TODO: aanpassen naar naamgeving BOI
 
     ref_name = ref_candidates[0]
 
@@ -94,12 +87,21 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
     for serie, group in df.groupby("Serie"):
         group = group.sort_values("km", ascending=False)
 
+        if 'totaalBI' in serie:
+                linestyle = 'solid'
+                linewidth = 1
+        else:
+                linestyle = 'dotted' 
+                linewidth = 2
+
         ax1.plot(
             group["km"],
             group[parameter],
-            label=serie,
-            lw=2,
-            color=color_map[serie],
+            lw=linewidth,
+            linestyle=linestyle,
+            color=colors_dict[serie],
+            label=legend_dict[serie]
+
         )
 
     ax1.tick_params(labelbottom=True)
@@ -122,12 +124,20 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
         merged = ref.merge(other, on="km", how="inner")
         merged["diff"] = merged["ref_" + parameter_short] - merged[parameter_short]
 
+        if 'totaalBI' in serie:
+                linestyle = 'solid'
+                linewidth = 1
+        else:
+                linestyle = 'dotted' 
+                linewidth = 2
+
         ax2.plot(
             merged["km"],
             merged["diff"],
-            label=serie,
-            lw=2,
-            color=color_map[serie],
+            lw=linewidth,
+            linestyle=linestyle,
+            color=colors_dict[serie],
+            label=legend_dict[serie]
         )
 
     ax2.set_xlabel("Rivierkilometer (km)")
@@ -148,15 +158,15 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
 
     # Plot thalweg
     ax3.plot(x, y, color="black", lw=2, zorder=3)
-
     # Select 5 points: first, 3 evenly spaced intermediate, last
     indices = np.linspace(0, len(line_df)-1, 5, dtype=int)
 
     for idx in indices:
         # Add first and last km labels
+        ax3.scatter(x[idx], y[idx], color="black", s=30)
         ax3.text(x[idx], y[idx], f"km {int(km_vals[idx])}", fontsize=8,color='black',
                 path_effects=[pe.withStroke(linewidth=4, foreground="white")],alpha=0.7)
-
+        
     # Compute bounding box
     xmin, xmax = x.min(), x.max()
     ymin, ymax = y.min(), y.max()
@@ -202,5 +212,5 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
     return df
 
 if __name__ == "__main__":
-    df = plot_waterstand_series_with_difference("z:\\149287_BOI_verschil_en_effectanalyse\\data\\viewer_export\\B2035_Wind_BER-RIJN_B2035_MxWd_WS.csv")
+    df = plot_waterstand_series_with_difference("z:\\149287_BOI_verschil_en_effectanalyse\\data\\viewer_export\\B2035_Wind_BER-RIJN_B2035_MxWd_WS_BOI.csv")
     #TODO: pas hier het pad aan naar de juiste csv file

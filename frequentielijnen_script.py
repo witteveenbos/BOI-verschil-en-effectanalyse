@@ -53,12 +53,6 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
     directory_path, save_dir = get_directories(company_name)
     base_path = rf"{directory_path}\HydraNL_Beoordelen_{prefix}_{watersysteem}"
 
-    if company_name == 'W+B':
-        if Path(base_path).exists():
-                print(f"Directory '{base_path}' exists.")
-        else:
-            raise FileNotFoundError(f"Directory '{base_path}' does not exist. Please check the path and try again.")
-
     # Save all frequency, values of the chosen HydraNL outputs in a dictionary.
     # data_by_location[locationname][simulation_type] = (frequency, values), e.g. data_by_location['014-01_0017_HY_km0001']['2017-fysica-zon_HBN]
     data_by_location = defaultdict(dict)
@@ -73,13 +67,13 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
             else:
                 if locations == None or item.name.split('_BI')[0] in locations:
                     # Als we een gewenste locatie gevonden hebben, checken we of de map de juiste rekeninstellingen heeft
-                    if (simulation_types == None and item.name.endswith(parameter)) or (simulation_types != None and item.name.split('BI')[-1] in simulation_types):
+                    if (simulation_types == None and item.name.endswith(parameter)) or (simulation_types != None and item.name.split('_BI')[-1] in simulation_types):
                         # Look in the uitvoer-map of this location, find the .txt file which contains the output of HydraNL
                         uitvoer_loc_path = path / item.name / 'uitvoer'
                         for file in uitvoer_loc_path.iterdir():
                             if file.name.endswith('.txt'):
                                 temp_path = uitvoer_loc_path / file.name
-                                data_by_location[item.name.split('_BI')[0]][item.name.split('BI')[-1]] = read_hfreq_file(rf"{temp_path}")
+                                data_by_location[item.name.split('_BI')[0]]['BI'+item.name.split('_BI')[-1]] = read_hfreq_file(rf"{temp_path}")
 
     # All data we want to plot has been collected, now we move on to plotting.
     #######################################################
@@ -96,7 +90,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
             legend_name = legend_dict[computation_name.split('_')[0]]
             # Convert frequency (per year) to return period (years)
             return_period = 1.0 / frequency
-            if computation_name.split('-')[1] == 'totaal':
+            if computation_name.split('-')[1] == 'totaalBI':
                 linestyle = 'solid'
                 linewidth = 1
             else:
@@ -184,4 +178,6 @@ if __name__ == "__main__":
     # main_frequentielijn(watersysteem = 'Maas', simulation_types = ["2017-fysica-zon_WS", "2023-totaal-met_WS", "2017-totaal-zon_WS"], locations = ['036-01_0050_MA_km0160'], save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
     # Onderstaande regel plot terugkeertijden van waterstand ('WS') voor alle locaties van de Maas (zowel oever als as) en voor elke rekeninstelling.
     #main_frequentielijn(watersysteem = 'Maas', parameter='WS', save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
-    main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV", save_dir=r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
+    #main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV", save_dir=r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
+    main_frequentielijn(watersysteem = 'Maas', parameter='WS', location_type=["oever"],locations = ['036-01_0050_MA_km0160'],company_name= "W+B")
+

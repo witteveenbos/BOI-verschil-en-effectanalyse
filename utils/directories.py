@@ -1,7 +1,7 @@
 '''
 Docstring for directories
 function to set paths depending on the company folder structure
-BOI verschil en effectanalyse
+BOI verschil en effectanalyse 
 Witteveen+Bos & HKV 2026
 '''
 
