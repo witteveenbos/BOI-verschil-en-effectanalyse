@@ -13,9 +13,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from collections import defaultdict
-from utils.readers import read_hfreq_file
 
-def main_frequentielijn(watersysteem = None, simulation_types = None, location_type = ['as', 'oever'], locations = None, parameter = None, colors_dict = None, save_dir = None):
+from utils.readers import read_hfreq_file
+from utils.directories import get_directories
+
+from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict
+
+def main_frequentielijn(watersysteem = None, simulation_types = None, company_name = 'HKV', location_type = ['as', 'oever'], locations = None, parameter = None, colors_dict = colors_dict, save_dir = None):
     """
     Main function to read and plot hfreq data.
     
@@ -32,7 +36,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, location_t
         parameter (str) : Name of the parameter of interest. This is to be used only when simulation_types is None, so that all simulation_types of a single parameter are plotted in the same figure (rather than multiple parameters' return times in a single figure).
                                 Some examples of possible values: 'HBN', 'WS', 'Tp', 'Hs'
         colors_dict (dict) : Maps simulation_type to a plotting color.
-                                If none is given, a standard template is used.
+                                If none is given, a standard template is used which is read from utils.plotting_settings.
         save_dir (str) : Path of where to save the plots.
                                 If none is given, gives error.
     """
@@ -42,7 +46,12 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, location_t
     else:
         prefix = 'BOR'
     
-    base_path = rf"R:\pr\5542_10\Verschilanalyse\sommen\HydraNL_Beoordelen_{prefix}_{watersysteem}"
+    # Set directory paths based on company folder structure
+
+
+    # setting base path and testing if it exists
+    directory_path, save_dir = get_directories(company_name)
+    base_path = rf"{directory_path}\HydraNL_Beoordelen_{prefix}_{watersysteem}"
 
     # Save all frequency, values of the chosen HydraNL outputs in a dictionary.
     # data_by_location[locationname][simulation_type] = (frequency, values), e.g. data_by_location['014-01_0017_HY_km0001']['2017-fysica-zon_HBN]
@@ -58,71 +67,30 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, location_t
             else:
                 if locations == None or item.name.split('_BI')[0] in locations:
                     # Als we een gewenste locatie gevonden hebben, checken we of de map de juiste rekeninstellingen heeft
-                    if (simulation_types == None and item.name.endswith(parameter)) or (simulation_types != None and item.name.split('BI')[-1] in simulation_types):
+                    if (simulation_types == None and item.name.endswith(parameter)) or (simulation_types != None and item.name.split('_BI')[-1] in simulation_types):
                         # Look in the uitvoer-map of this location, find the .txt file which contains the output of HydraNL
                         uitvoer_loc_path = path / item.name / 'uitvoer'
                         for file in uitvoer_loc_path.iterdir():
                             if file.name.endswith('.txt'):
                                 temp_path = uitvoer_loc_path / file.name
-                                data_by_location[item.name.split('_BI')[0]][item.name.split('BI')[-1]] = read_txt_file(rf"{temp_path}")
+                                data_by_location[item.name.split('_BI')[0]]['BI'+item.name.split('_BI')[-1]] = read_hfreq_file(rf"{temp_path}")
 
     # All data we want to plot has been collected, now we move on to plotting.
     #######################################################
-    # Fix colors for each simulation_type
-    if colors_dict == None:
-        colors_dict = {
-            '2017-totaal-zon': 'lightblue', 
-            '2017-fysica-zon': 'hotpink', 
-            '2017-sttstk-zon': 'lightgreen', 
-            '2017-rknnst-zon': 'purple', 
-            '2023-totaal-zon': 'orange', 
-            '2017-totaal-met': 'darkblue', 
-            '2017-onzkrh-met': 'darkgreen', 
-            '2023-totaal-met': 'red'
-        }
-    # Create the dictionary to translate simulation_types to legend names
-    legend_dict = {
-            '2017-totaal-zon': 'WBI2017 (totaal, zonder modelonzekerheid)', 
-            '2017-fysica-zon': 'BOI2023 (met WBI2017 fysica, zonder modelonzekerheid)', 
-            '2017-sttstk-zon': 'BOI2023 (met WBI2017 statistiek, zonder modelonzekerheid)', 
-            '2017-rknnst-zon': 'BOI2023 (met WBI2017 rekeninstellingen, zonder modelonzekerheid)', 
-            '2023-totaal-zon': 'BOI2023 (totaal, zonder modelonzekerheid)', 
-            '2017-totaal-met': 'WBI2017 (totaal, met modelonzekerheid)', 
-            '2017-onzkrh-met': 'BOI2023 (met WBI2017 onzekerheid, met modelonzekerheid)', 
-            '2023-totaal-met': 'BOI2023 (totaal, met modelonzekerheid)'
-        }
-
-    ylabel_dict = {
-        'WS' : 'Waterstand (m+NAP)',
-        'HBN' : 'HBN (m+NAP)',
-        'Tp' : 'Golfperiode (s)',
-        'Hs' : 'Significante golfhoogte (m)'
-    }
-
-    order_dict = {
-        legend_dict['2017-totaal-zon']: 4, 
-        legend_dict['2017-fysica-zon']: 1, 
-        legend_dict['2017-sttstk-zon']: 2, 
-        legend_dict['2017-rknnst-zon']: 3, 
-        legend_dict['2023-totaal-zon']: 0, 
-        legend_dict['2017-totaal-met']: 7, 
-        legend_dict['2017-onzkrh-met']: 6, 
-        legend_dict['2023-totaal-met']: 5
-    }
 
     # Create separate plot for each location
     for location, computations in sorted(data_by_location.items()):
         # Create new figure for this location
         fig, ax = plt.subplots(figsize=(12, 6))
         parameter_name = list(computations.keys())[0].split('_')[1]
-        ylabel = ylabel_dict[parameter_name]
+        ylabel = parameters[parameter_name][0]
         # Plot each computation for this location
         for computation_name, (frequency, water_level) in sorted(computations.items()):
             color = colors_dict[computation_name.split('_')[0]]
             legend_name = legend_dict[computation_name.split('_')[0]]
             # Convert frequency (per year) to return period (years)
             return_period = 1.0 / frequency
-            if computation_name.split('-')[1] == 'totaal':
+            if computation_name.split('-')[1] == 'totaalBI':
                 linestyle = 'solid'
                 linewidth = 1
             else:
@@ -209,4 +177,7 @@ if __name__ == "__main__":
     # Onderstaande regel plot terugkeertijden van de gegeven locaties en rekeninstellingen
     # main_frequentielijn(watersysteem = 'Maas', simulation_types = ["2017-fysica-zon_WS", "2023-totaal-met_WS", "2017-totaal-zon_WS"], locations = ['036-01_0050_MA_km0160'], save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
     # Onderstaande regel plot terugkeertijden van waterstand ('WS') voor alle locaties van de Maas (zowel oever als as) en voor elke rekeninstelling.
-    # main_frequentielijn(watersysteem = 'Maas', parameter='WS', save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
+    #main_frequentielijn(watersysteem = 'Maas', parameter='WS', save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
+    #main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV", save_dir=r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
+    main_frequentielijn(watersysteem = 'Maas', parameter='WS', location_type=["oever"],locations = ['036-01_0050_MA_km0160'],company_name= "W+B")
+

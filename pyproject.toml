@@ -7,7 +7,7 @@ name = "boi_verschil_en_effectanalyse"
 version = "0.0.0"
 description = "Add a short description here!"
 authors = ["Cas van Bemmelen <cas.van.bemmelen@witteveenbos.com>"]
-license = "Proprietary - Witteveen+Bos"
+license = "Proprietary - Witteveen+Bos & HKV"
 readme = "README.md"
 package-mode = false
 
@@ -15,16 +15,14 @@ package-mode = false
 python = "^3.11"
 matplotlib = "^3.10.8"
 pandas = "^3.0.0"
+cmocean = "^4.0.3"
+xlrd = "^2.0.2"
+openpyxl = "^3.1.5"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.10"
 pytest = "^7.2.1"
 ipykernel = "^7.1.0"
-
-[[tool.poetry.source]]
-name = "wb_pypi"
-url = "https://pypi.wbad.witteveenbos.com/simple/"
-priority = "primary"
 
 [[tool.poetry.source]]
 name = "PyPI"
