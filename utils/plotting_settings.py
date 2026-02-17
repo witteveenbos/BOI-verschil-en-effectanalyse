@@ -50,3 +50,51 @@ order_dict = {
         legend_dict['BI2023-onzB2017-met']: 6, 
         legend_dict['BI2023-totaalBI-met']: 5
     }
+import matplotlib.transforms as mtransforms
+
+def annotate_BOI_higher_lower(ax):
+
+    y_min, y_max = ax.get_ylim()
+
+    # Blend: x in axes coords, y in data coords
+    trans = mtransforms.blended_transform_factory(
+        ax.transAxes, ax.transData
+    )
+
+    x_pos = 1.05  # clearly outside right spine
+
+    # Up arrow (0 → y_max)
+    ax.annotate(
+        '',
+        xy=(x_pos, y_max/2),
+        xytext=(x_pos, 0),
+        xycoords=trans,
+        textcoords=trans,
+        arrowprops=dict(arrowstyle='->', linewidth=1.2),
+        annotation_clip=False
+    )
+
+    ax.text(
+        x_pos, y_max/2,
+        'BOI\nlager',
+        transform=trans,
+        va='bottom', ha='center'
+    )
+
+    # Down arrow (0 → y_min)
+    ax.annotate(
+        '',
+        xy=(x_pos, y_min/2),
+        xytext=(x_pos, 0),
+        xycoords=trans,
+        textcoords=trans,
+        arrowprops=dict(arrowstyle='->', linewidth=1.2),
+        annotation_clip=False
+    )
+
+    ax.text(
+        x_pos, y_min/2,
+        'BOI\nhoger',
+        transform=trans,
+        va='top', ha='center'
+    )

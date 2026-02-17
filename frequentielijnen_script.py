@@ -17,7 +17,7 @@ from collections import defaultdict
 from utils.readers import read_hfreq_file
 from utils.directories import get_directories
 
-from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict
+from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict, annotate_BOI_higher_lower
 
 def main_frequentielijn(watersysteem = None, simulation_types = None, company_name = 'HKV', location_type = ['as', 'oever'], locations = None, parameter = None, colors_dict = colors_dict):
     """
@@ -46,7 +46,6 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         prefix = 'BOR'
     
     # Set directory paths based on company folder structure
-
 
     # setting base path and testing if it exists
     directory_path, save_dir = get_directories(company_name)
@@ -85,18 +84,25 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         has_reference = bool(reference_name)
         reference_name = reference_name[0] # Spaghetti code ten top dit
 
+        parameter_name = list(computations.keys())[0].split('_')[1]
+        ylabel = parameters[parameter_name][0]
+
         # --- Create figure (1 or 2 panels depending on availability reference)
         if has_reference:
             fig, (ax, ax_diff) = plt.subplots(
-                2, 1, figsize=(12, 9), sharex=True,
+                2, 1, figsize=(8, 8), sharex=True,
                 gridspec_kw={'height_ratios': [3, 2]}
             )
-        else:
-            fig, ax = plt.subplots(figsize=(12, 6))
-            ax_diff = None  # no difference plot
+            ax.axvspan(10, 100, alpha=0.2, color = 'gray')  # licht grijs tussen 10 en 100 jaar
+            ax_diff.axvspan(10, 100, alpha=0.2, color = 'gray')  # licht grijs tussen 10 en 100 jaar
 
-        parameter_name = list(computations.keys())[0].split('_')[1]
-        ylabel = parameters[parameter_name][0]
+            ylabel_diff = parameters[parameter_name][1]
+            ylabel_diff_unit = parameters[parameter_name][4]
+
+        else:
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax_diff = None  # no difference plot
+            ax.axvspan(10, 100, alpha=0.2, color = 'gray')  # licht grijs tussen 10 en 100 jaar
 
         # ------------------------------------------------------------------
         # Prepare reference data (needed for difference plot)
@@ -152,7 +158,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         # ------------------------------------------------------------------
         # TOP AXIS FORMATTING  (your original styling)
         # ------------------------------------------------------------------
-        ax.set_xlabel("Terugkeertijd (jaar)", fontsize=11 if not has_reference else 0)
+        ax.set_xlabel("Terugkeertijd (jaar)", fontsize=11)
         ax.set_ylabel(f"{ylabel}", fontsize=11)
         ax.set_xlim(10, 10e5)
         ax.set_xscale('log')
@@ -172,16 +178,23 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         if max_ylim_value != -np.inf:
             ax.set_ylim(top=max_ylim_value + 0.1*(max_ylim_value - min_ylim_value))
 
+        ax.axvspan(10, 100, alpha=0.3, color = 'white',zorder=10)  # licht grijs tussen 10 en 100 jaar
+
         # ------------------------------------------------------------------
         # DIFFERENCE AXIS FORMATTING
         # ------------------------------------------------------------------
         if has_reference:
-            ax_diff.set_title('Verschil t.o.v. BOI', fontsize = 12)
+            #ax_diff.set_title('Verschil t.o.v. BOI', fontsize = 12)
             ax_diff.axhline(0.0, color='red', linewidth=0.8)
-            ax_diff.set_ylabel(rf"$\Delta${ylabel}", fontsize=11)
+            ax_diff.set_ylabel(rf"$\Delta${ylabel_diff} t.o.v. BOI ({ylabel_diff_unit})", fontsize=11)
             ax_diff.set_xlabel("Terugkeertijd (jaar)", fontsize=11)
             ax_diff.set_xscale('log')
             ax_diff.grid(True, which='both', alpha=0.3)
+
+            # Annotate BOI higher/lower
+            annotate_BOI_higher_lower(ax_diff)
+            ax_diff.axvspan(10, 100, alpha=0.3, color = 'white',zorder=10)  # licht grijs tussen 10 en 100 jaar
+
 
         # ------------------------------------------------------------------
         # TITLE (unchanged logic)
@@ -212,7 +225,8 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         sorted_labels = [item[1] for item in items]
         sorted_handles = [item[2] for item in items]
 
-        ax.legend(sorted_handles, sorted_labels, loc='upper left', fontsize=9)
+        legend = ax.legend(sorted_handles, sorted_labels, loc='upper left', fontsize=9)
+        legend.set_zorder(11)
 
         plt.tight_layout()
 
@@ -222,15 +236,14 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
 
         plt.close()
 
-
     # Optionally show all plots at the end
-    # plt.show()
+    plt.show()
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
     # Example usage:
     # Onderstaande regel plot terugkeertijden van de gegeven locaties en rekeninstellingen
     # main_frequentielijn(watersysteem = 'Maas', simulation_types = ["2017-fysica-zon_WS", "2023-totaal-met_WS", "2017-totaal-zon_WS"], locations = ['036-01_0050_MA_km0160'], save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
     # Onderstaande regel plot terugkeertijden van waterstand ('WS') voor alle locaties van de Maas (zowel oever als as) en voor elke rekeninstelling.
     #main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV")
-    # main_frequentielijn(watersysteem = 'Maas', parameter='WS', location_type=["oever"],locations = ['036-01_0050_MA_km0160'],company_name= "W+B")
+    main_frequentielijn(watersysteem = 'Maas', parameter='WS', location_type=["oever"],locations = ['036-01_0050_MA_km0160'],company_name= "W+B")
 
