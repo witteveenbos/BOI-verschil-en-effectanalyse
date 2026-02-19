@@ -5,50 +5,50 @@ Witteveen+Bos & HKV 2026
 '''
 
 parameters = {
-    "WS":  ("Waterstand (m+NAP)", "waterstand", "m+NAP", "ws", "m"),
+    "ws":  ("Waterstand (m+NAP)", "waterstand", "m+NAP", "ws", "m"),
     "HBN": ("HBN (m+NAP)",       "HBN",        "m+NAP", "hbn", "m"),
     "Hs":  ("Hs (m)",            "Hs",         "m",     "hs",  "m"),
     "Tp":  ("Tp (s)",            "Tp",         "s",     "tp",  "s"),
 }
 
 colors_dict = {
-            'BI2017-totaalBI-zon': 'lightblue', 
-            'BI2023-fysB2017-zon': 'hotpink', 
-            'BI2023-stkB2017-zon': 'lightgreen', 
-            'BI2023-rknB2017-zon': 'purple', 
-            'BI2023-totaalBI-zon': 'orange', 
-            'BI2017-totaalBI-met': 'darkblue', 
-            'BI2023-onzB2017-met': 'darkgreen', 
-            'BI2023-totaalBI-met': 'red'
+            'BI2017-totB2017-zon': ('lightblue', 1.5, 'dashed'), 
+            'BI2023-fysB2017-zon': ('hotpink', 1.5, 'dotted'), 
+            'BI2023-stkB2017-zon': ('lightgreen', 1.5, 'dashdot'), 
+            'BI2023-rknB2017-zon': ('purple', 1.5, 'dotted'), 
+            'BI2023-totB2023-zon': ('orange', 1.5, 'dashed'), 
+            'BI2017-totB2017-met': ('darkblue', 2, 'solid'), 
+            'BI2023-onzB2017-met': ('darkgreen', 1.5, 'solid'), 
+            'BI2023-totB2023-met': ('red', 2, 'solid')
         }
 
 legend_dict = {
-            'BI2017-totaalBI-zon': 'WBI2017 (totaal, zonder modelonzekerheid)', 
+            'BI2017-totB2017-zon': 'WBI2017 (totaal, zonder modelonzekerheid)', 
             'BI2023-fysB2017-zon': 'BOI2023 (met WBI2017 fysica, zonder modelonzekerheid)', 
             'BI2023-stkB2017-zon': 'BOI2023 (met WBI2017 statistiek, zonder modelonzekerheid)', 
             'BI2023-rknB2017-zon': 'BOI2023 (met WBI2017 rekeninstellingen, zonder modelonzekerheid)', 
-            'BI2023-totaalBI-zon': 'BOI2023 (totaal, zonder modelonzekerheid)', 
-            'BI2017-totaalBI-met': 'WBI2017 (totaal, met modelonzekerheid)', 
+            'BI2023-totB2023-zon': 'BOI2023 (totaal, zonder modelonzekerheid)', 
+            'BI2017-totB2017-met': 'WBI2017 (totaal, met modelonzekerheid)', 
             'BI2023-onzB2017-met': 'BOI2023 (met WBI2017 onzekerheid, met modelonzekerheid)', 
-            'BI2023-totaalBI-met': 'BOI2023 (totaal, met modelonzekerheid)'
+            'BI2023-totB2023-met': 'BOI2023 (totaal, met modelonzekerheid)'
         }
 
 ylabel_dict = {
-    'WS' : 'Waterstand (m+NAP)',
+    'ws' : 'Waterstand (m+NAP)',
     'HBN' : 'HBN (m+NAP)',
     'Tp' : 'Golfperiode (s)',
     'Hs' : 'Significante golfhoogte (m)'
 }
 
 order_dict = {
-        legend_dict['BI2017-totaalBI-zon']: 4, 
-        legend_dict['BI2023-fysB2017-zon']: 1, 
-        legend_dict['BI2023-stkB2017-zon']: 2, 
-        legend_dict['BI2023-rknB2017-zon']: 3, 
-        legend_dict['BI2023-totaalBI-zon']: 0, 
-        legend_dict['BI2017-totaalBI-met']: 7, 
-        legend_dict['BI2023-onzB2017-met']: 6, 
-        legend_dict['BI2023-totaalBI-met']: 5
+        legend_dict['BI2017-totB2017-zon']: 3, 
+        legend_dict['BI2023-fysB2017-zon']: 4, 
+        legend_dict['BI2023-stkB2017-zon']: 5, 
+        legend_dict['BI2023-rknB2017-zon']: 6, 
+        legend_dict['BI2023-totB2023-zon']: 1, 
+        legend_dict['BI2017-totB2017-met']: 2, 
+        legend_dict['BI2023-onzB2017-met']: 7, 
+        legend_dict['BI2023-totB2023-met']: 0
     }
 import matplotlib.transforms as mtransforms
 
@@ -76,7 +76,7 @@ def annotate_BOI_higher_lower(ax):
 
     ax.text(
         x_pos, y_max/2,
-        'BOI\nlager',
+        'BOI\nhoger',
         transform=trans,
         va='bottom', ha='center'
     )
@@ -94,7 +94,7 @@ def annotate_BOI_higher_lower(ax):
 
     ax.text(
         x_pos, y_min/2,
-        'BOI\nhoger',
+        'BOI\nlager',
         transform=trans,
         va='top', ha='center'
     )

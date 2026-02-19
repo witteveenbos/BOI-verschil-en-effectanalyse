@@ -49,7 +49,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
 
     # setting base path and testing if it exists
     directory_path, save_dir = get_directories(company_name)
-    base_path = rf"{directory_path}\HydraNL_Beoordelen_{prefix}_{watersysteem}"
+    base_path = rf"{directory_path}\HydraNL_BI2023_{prefix}_{watersysteem}"
 
     # Save all frequency, values of the chosen HydraNL outputs in a dictionary.
     # data_by_location[locationname][simulation_type] = (frequency, values), e.g. data_by_location['014-01_0017_HY_km0001']['2017-fysica-zon_HBN]
@@ -65,7 +65,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
             else:
                 if locations == None or item.name.split('_BI')[0] in locations:
                     # Als we een gewenste locatie gevonden hebben, checken we of de map de juiste rekeninstellingen heeft
-                    if (simulation_types == None and item.name.endswith(parameter)) or (simulation_types != None and item.name.split('_BI')[-1] in simulation_types):
+                    if (simulation_types == None and item.name.endswith(parameter)) or (simulation_types != None and 'BI'+item.name.split('_BI')[-1][:-3] in simulation_types): #-3 omdat we de laatste 3 tekens van de naam moeten afhalen om bij de rekeninstelling te komen (bijv. '_ws') - geen geweldige oplossing
                         # Look in the uitvoer-map of this location, find the .txt file which contains the output of HydraNL
                         uitvoer_loc_path = path / item.name / 'uitvoer'
                         for file in uitvoer_loc_path.iterdir():
@@ -79,7 +79,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
     # Create separate plot for each location
     for location, computations in sorted(data_by_location.items()):
 
-        reference_name = 'BI2023-totaalBI-met'
+        reference_name = 'BI2023-totB2023-met'
         reference_name = [i for i in list(computations.keys()) if  i.split('_')[0] == reference_name]
         has_reference = bool(reference_name)
         reference_name = reference_name[0] # Spaghetti code ten top dit
@@ -120,17 +120,11 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         # Plot all computations (TOP FIGURE)
         # ------------------------------------------------------------------
         for computation_name, (frequency, water_level) in sorted(computations.items()):
-            color = colors_dict[computation_name.split('_')[0]]
+            color = colors_dict[computation_name.split('_')[0]][0]
             legend_name = legend_dict[computation_name.split('_')[0]]
-
+            linewidth = colors_dict[computation_name.split('_')[0]][1]
+            linestyle = colors_dict[computation_name.split('_')[0]][2]
             return_period = 1.0 / frequency
-
-            if computation_name.split('-')[1] == 'totaalBI':
-                linestyle = 'solid'
-                linewidth = 1
-            else:
-                linestyle = 'dotted'
-                linewidth = 2
 
             ax.plot(return_period, water_level,
                     label=legend_name, linewidth=linewidth,
@@ -149,7 +143,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
                 # interpolate this computation onto reference T-grid
                 wl_interp = np.interp(ref_T, T_sorted, wl_sorted)
 
-                diff = wl_interp - ref_wl
+                diff = ref_wl - wl_interp
 
                 ax_diff.plot(ref_T, diff,
                             color=color, linestyle=linestyle,
@@ -185,8 +179,8 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         # ------------------------------------------------------------------
         if has_reference:
             #ax_diff.set_title('Verschil t.o.v. BOI', fontsize = 12)
-            ax_diff.axhline(0.0, color='red', linewidth=0.8)
-            ax_diff.set_ylabel(rf"$\Delta${ylabel_diff} t.o.v. BOI ({ylabel_diff_unit})", fontsize=11)
+            ax_diff.axhline(0.0, color='red', linewidth=1.5)
+            ax_diff.set_ylabel(rf"Verschil in {ylabel_diff} t.o.v. BOI ({ylabel_diff_unit})", fontsize=11)
             ax_diff.set_xlabel("Terugkeertijd (jaar)", fontsize=11)
             ax_diff.set_xscale('log')
             ax_diff.grid(True, which='both', alpha=0.3)
@@ -225,7 +219,7 @@ def main_frequentielijn(watersysteem = None, simulation_types = None, company_na
         sorted_labels = [item[1] for item in items]
         sorted_handles = [item[2] for item in items]
 
-        legend = ax.legend(sorted_handles, sorted_labels, loc='upper left', fontsize=9)
+        legend = ax.legend(sorted_handles, sorted_labels, loc='upper left', fontsize=7)
         legend.set_zorder(11)
 
         plt.tight_layout()
@@ -245,5 +239,5 @@ if __name__ == "__main__":
     # main_frequentielijn(watersysteem = 'Maas', simulation_types = ["2017-fysica-zon_WS", "2023-totaal-met_WS", "2017-totaal-zon_WS"], locations = ['036-01_0050_MA_km0160'], save_dir= r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties")
     # Onderstaande regel plot terugkeertijden van waterstand ('WS') voor alle locaties van de Maas (zowel oever als as) en voor elke rekeninstelling.
     #main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV")
-    main_frequentielijn(watersysteem = 'Maas', parameter='WS', location_type=["oever"],locations = ['036-01_0050_MA_km0160'],company_name= "W+B")
+    main_frequentielijn(watersysteem = 'Rijn', simulation_types = ['BI2017-totB2017-zon','BI2017-totB2017-met','BI2023-totB2023-zon','BI2023-totB2023-met','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'], parameter='ws', location_type=["as"],locations = ['as_0061_RH_km0854'],company_name= "W+B")
 
