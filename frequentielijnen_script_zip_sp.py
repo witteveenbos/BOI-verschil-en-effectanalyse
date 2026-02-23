@@ -246,17 +246,18 @@ if __name__ == "__main__":
     #main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV")
 
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen Meren'
-    som_versie = 'oeverlocaties - concept_20260221'
-    location_type = 'oever'
-    watersysteem = 'MRN_Markermeer' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
+    project_fase = 'WP02a Beoordelen BOR - Rijntakken'
+    som_versie = 'aslocaties - concept_20260219'
+    location_type = 'as'
+    watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
+    zip_file_name = "HydraNL_BI2023_BOR_Rijn_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
     parameter = 'ws'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526']
     simulation_types = ['BI2017-totB2017-zon','BI2017-totB2017-met','BI2023-totB2023-zon','BI2023-totB2023-met','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebbem
 
     #Bestanden ophalen
-    files = get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersysteem, zip_file_name = "HydraNL_BI2023_MRN_Markermeer_oever.zip", parameter = parameter) 
+    files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
 
     save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "frequentielijnen", location_type) # opslaan in een submap van de map 
 
