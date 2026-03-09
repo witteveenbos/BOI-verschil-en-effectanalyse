@@ -245,7 +245,7 @@ if __name__ == "__main__":
     # Onderstaande regel plot terugkeertijden van waterstand ('WS') voor alle locaties van de Maas (zowel oever als as) en voor elke rekeninstelling.
     #main_frequentielijn(watersysteem = 'Maas', parameter='WS', company_name= "HKV")
 
-    sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    sp_base_path = r"C:\Users\Molendijk\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"#r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
     project_fase = 'WP02a Beoordelen BOR - Rijntakken'
     som_versie = 'aslocaties - concept_20260219'
     location_type = 'as'
