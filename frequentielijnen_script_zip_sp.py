@@ -20,7 +20,7 @@ from utils.directories import get_parameter_file_paths
 
 from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict, annotate_BOI_higher_lower
 
-def main_frequentielijn(files, watersysteem = None, simulation_types = None, company_name = 'HKV', location_type = ['as', 'oever'], locations = None, parameter = None, colors_dict = colors_dict, save_dir = None):
+def main_frequentielijn(files, watersysteem = None, simulation_types = None, reference_name = 'BI2023-totB2023-met', company_name = 'HKV', location_type = ['as', 'oever'], locations = None, parameter = None, colors_dict = colors_dict, save_dir = None):
     """
     Main function to read and plot hfreq data.
     
@@ -80,10 +80,10 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
     # Create separate plot for each location
     for location, computations in sorted(data_by_location.items()):
 
-        reference_name = 'BI2023-totB2023-met'
-        reference_name = [i for i in list(computations.keys()) if  i.split('_')[0] == reference_name]
+        #reference_name = reference_name
+        #reference_name = [i for i in list(computations.keys()) if  i.split('_')[0] == reference_name]
         has_reference = bool(reference_name)
-        reference_name = reference_name[0] # Spaghetti code ten top dit
+        #reference_name = reference_name[0] # Spaghetti code ten top dit
 
         parameter_name = list(computations.keys())[0].split('_')[-1]
         ylabel = parameters[parameter_name][0]
@@ -100,6 +100,21 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
             ylabel_diff = parameters[parameter_name][1]
             ylabel_diff_unit = parameters[parameter_name][4]
 
+            if set(['BI2017-totB2017-met','BI2023-totB2023-met', 'BI2017-totB2017-zon','BI2023-totB2023-zon']) == set(simulation_types) and reference_name == 'BI2023-totB2023-met':
+                filename_addition = "totaal-boi-met"
+                ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI-met ({ylabel_diff_unit})"
+                diff_simulations = ['BI2017-totB2017-met','BI2023-totB2023-met']
+            elif set(['BI2017-totB2017-met','BI2023-totB2023-met', 'BI2017-totB2017-zon','BI2023-totB2023-zon']) == set(simulation_types) and reference_name == 'BI2023-totB2023-zon':
+                filename_addition = "totaal-boi-zon"
+                ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI-zon ({ylabel_diff_unit})"
+                diff_simulations = ['BI2017-totB2017-zon','BI2023-totB2023-zon']
+            #elif set(['BI2017-totB2017-met','BI2023-totB2023-met']) == set(simulation_types) and reference_name == 'BI2017-totB2017-met':
+            #    filename_addition = "totaal-wbi-met"
+            #    ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. WBI ({ylabel_diff_unit})"
+            else:
+                filename_addition = "detail-boi-zon"
+                ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI-zon ({ylabel_diff_unit})"
+                diff_simulations = simulation_types
         else:
             fig, ax = plt.subplots(figsize=(8, 4))
             ax_diff = None  # no difference plot
@@ -109,7 +124,8 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
         # Prepare reference data (needed for difference plot)
         # ------------------------------------------------------------------
         if has_reference:
-            ref_frequency, ref_wl = computations[reference_name]
+            key = f"{reference_name}_ws"
+            ref_frequency, ref_wl = computations[key]
             ref_T = 1.0 / ref_frequency
 
             # ensure increasing order for interpolation
@@ -134,8 +150,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
             # ------------------------------------------------------------------
             # DIFFERENCE PLOT (if reference exists and not the reference itself)
             # ------------------------------------------------------------------
-            if has_reference and computation_name != reference_name:
-
+            if has_reference and computation_name[:-3] in diff_simulations:
                 # sort for interpolation
                 sort_idx = np.argsort(return_period)
                 T_sorted = return_period[sort_idx]
@@ -144,7 +159,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
                 # interpolate this computation onto reference T-grid
                 wl_interp = np.interp(ref_T, T_sorted, wl_sorted)
 
-                diff = ref_wl - wl_interp
+                diff = wl_interp - ref_wl
 
                 ax_diff.plot(ref_T, diff,
                             color=color, linestyle=linestyle,
@@ -158,8 +173,9 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
         ax.set_xlim(10, 10e5)
         ax.set_xscale('log')
         ax.grid(True, which='both', alpha=0.3)
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
+        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.5))
 
+        ylimits = ax.get_ylim()
         # ylim logic unchanged
         max_ylim_value = -np.inf
         min_ylim_value = np.inf
@@ -178,18 +194,22 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
         # ------------------------------------------------------------------
         # DIFFERENCE AXIS FORMATTING
         # ------------------------------------------------------------------
+        
         if has_reference:
             #ax_diff.set_title('Verschil t.o.v. BOI', fontsize = 12)
-            ax_diff.axhline(0.0, color='red', linewidth=1.5)
-            ax_diff.set_ylabel(rf"Verschil in {ylabel_diff} t.o.v. BOI ({ylabel_diff_unit})", fontsize=11)
+            color = colors_dict[reference_name.split('_')[0]][0]
+            linewidth = colors_dict[reference_name.split('_')[0]][1]
+            linestyle = colors_dict[reference_name.split('_')[0]][2]
+            ax_diff.axhline(0.0, color=color, linestyle=linestyle, linewidth=0.5)
+            ax_diff.set_ylabel(ylabel_plot_diff, fontsize=11)
             ax_diff.set_xlabel("Terugkeertijd (jaar)", fontsize=11)
             ax_diff.set_xscale('log')
             ax_diff.grid(True, which='both', alpha=0.3)
-
+            
             # Annotate BOI higher/lower
-            annotate_BOI_higher_lower(ax_diff)
+            # annotate_BOI_higher_lower(ax_diff)
             ax_diff.axvspan(10, 100, alpha=0.3, color = 'white',zorder=10)  # licht grijs tussen 10 en 100 jaar
-
+            ax_diff.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
 
         # ------------------------------------------------------------------
         # TITLE (unchanged logic)
@@ -201,9 +221,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
         else:
             loc_type = None
 
-        title = f"Location: {location}"
-        if loc_type:
-            title += f" ({loc_type})"
+        title = f"Locatie: {location}"
         if watersysteem:
             title += f" - {watersysteem}"
 
@@ -225,7 +243,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, com
 
         plt.tight_layout()
 
-        filename = f"{location}_{parameter_name}.png"
+        filename = f"{location}_{parameter_name}_{filename_addition}.png"
         
         # Create directory if it does not exist
         os.makedirs(save_dir, exist_ok=True)
@@ -254,13 +272,20 @@ if __name__ == "__main__":
 
     parameter = 'ws'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526']
-    simulation_types = ['BI2017-totB2017-zon','BI2017-totB2017-met','BI2023-totB2023-zon','BI2023-totB2023-met','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebbem
-
+    #simulation_types = ['BI2017-totB2017-zon','BI2017-totB2017-met','BI2023-totB2023-zon','BI2023-totB2023-met','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebbem
+    simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
+    
     #Bestanden ophalen
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
 
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "frequentielijnen", location_type) # opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "frequentielijnen_new", location_type) # opslaan in een submap van de map 
 
-    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types,
-                        parameter = parameter, location_type = location_type, locations = locations, save_dir = save_dir)
+    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-met',
+                        parameter = parameter, location_type = location_type, locations = ['as_0061_RH_km0854'], save_dir = save_dir)
 
+    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
+                        parameter = parameter, location_type = location_type, locations = ['as_0061_RH_km0854'], save_dir = save_dir)
+
+    simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebbem
+    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
+                            parameter = parameter, location_type = location_type, locations = ['as_0061_RH_km0854'], save_dir = save_dir)
