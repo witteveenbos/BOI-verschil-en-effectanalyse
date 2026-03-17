@@ -49,7 +49,7 @@ def read_hfreq_file_new(filepath):
         if ".zip" in filepath.lower():
             zip_index = filepath.lower().find(".zip")
             zip_path = filepath[:zip_index + 4]
-            internal_path = filepath[zip_index + 5:]  # skip "\" after .zip
+            internal_path = filepath[zip_index + 5:].replace("\\", "/")
 
             with zipfile.ZipFile(zip_path, 'r') as z:
                 with z.open(internal_path) as f:
