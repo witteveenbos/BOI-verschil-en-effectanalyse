@@ -6,18 +6,18 @@ from collections import defaultdict
 import scipy.interpolate
 from pathlib import PurePosixPath
 
-# from utils.readers import read_hfreq_file, read_hfreq_file_new
+from utils.readers import read_hfreq_file, read_hfreq_file_new
 from utils.directories import get_directories, get_parameter_file_paths
 from utils.readers import read_hfreq_file_new
 
 from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict
 
 def staafdiagram_script(files,
+                        save_dir,
                         watersysteem,
                         parameter,
                         location_type,
                         locations = None,
-                        company_name = 'HKV',
                         simulation_types = ['2017-totB2017-met_ws', '2023-totB2023-met_ws'],
                         TT = 10000):
     TT_prob = 1/TT
@@ -35,12 +35,6 @@ def staafdiagram_script(files,
         prefix = 'BER'
     else:
         prefix = 'BOR'
-
-    # Set directory paths based on company folder structure
-
-
-    # setting base path and testing if it exists
-    directory_path, save_dir = get_directories(company_name)
 
     # Save all frequency, values of the chosen HydraNL outputs in a dictionary.
     # data_by_location[locationname][simulation_type] = (frequency, values), e.g. data_by_location['014-01_0017_HY_km0001']['2017-fysica-zon_HBN]
@@ -122,11 +116,14 @@ def staafdiagram_script(files,
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     
-
-    # Save with unique filename for each location
+    # naam maken en directory controlerenen aanmaken indien nodig
     filename = f"Staafdiagram_{watersysteem}_{parameter}.png"
-    plt.savefig(rf"{save_dir}\{filename}", dpi=150, bbox_inches='tight')
+    os.makedirs(save_dir, exist_ok=True)
+
+    plt.savefig(os.path.join(save_dir, filename), dpi=150, bbox_inches='tight')
     print(f"Plot saved as '{filename}'")
+    plt.close()
+
 
 if __name__ == "__main__":
     # Example usage:
@@ -148,10 +145,10 @@ if __name__ == "__main__":
     files = [f.replace('/', '\\') for f in files] # Toegevoegd door Thomas omdat het pad anders niet werkte bij mij
 
     staafdiagram_script(files,
+                        save_dir = save_dir,
                         watersysteem = 'Rijn',
                         parameter='ws',
                         location_type=["as"],
                         locations = None,
-                        company_name= "HKV",
                         simulation_types = ['2017-totB2017-zon_ws', '2023-totB2023-zon_ws'],
                         TT = 10000) 
