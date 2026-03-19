@@ -50,3 +50,10 @@ order_dict = {
         legend_dict['BI2023-onzB2017-met']: 6, 
         legend_dict['BI2023-totaalBI-met']: 5
     }
+
+mapname_dict = {'Europoort' : 'BER_Eprt', 'Hollandsche IJssel' : 'BER_HollandscheIJssel', 'Benedenmaas': 'BER_Maas',
+                'Rijntakken':'BER_Rijn', 'VolkerakZoommeer' : 'BER_VolkerakZoommeer', 'Bovenmaas' : 'BOR_Maas',
+                'Maas_hk' : 'BOR_MaasHK', 'Rijn':'BOR_Rijn', 'Kust-Dijken':'KST-Dijken', 'Kust duinen':'KST_Duinen', 
+                'Oosterschelde':'KST_Oosterschelde', 'Grevelingen':'MRN_Grevelingen', 'MRN_IJsselmeer':'IJsselmeer', 
+                'Markermeer':'MRN_Markermeer', 'Veluwerandmeren':'MRN_Veluwerandmeren', 'IJsseldelta':'YVD_IJsseldelta',
+                'Vechtdelta':'YVD_Vechtdelta'}
