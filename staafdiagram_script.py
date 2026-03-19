@@ -10,7 +10,7 @@ from utils.readers import read_hfreq_file, read_hfreq_file_new
 from utils.directories import get_directories, get_parameter_file_paths
 from utils.readers import read_hfreq_file_new
 
-from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict
+from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict, mapname_dict
 
 def staafdiagram_script(files,
                         save_dir,
@@ -21,13 +21,7 @@ def staafdiagram_script(files,
                         simulation_types = ['2017-totB2017-met_ws', '2023-totB2023-met_ws'],
                         TT = 10000):
     TT_prob = 1/TT
-
-    mapname_dict = {'Europoort' : 'BER_Eprt', 'Hollandsche IJssel' : 'BER_HollandscheIJssel', 'Benedenmaas': 'BER_Maas',
-                'Rijntakken':'BER_Rijn', 'VolkerakZoommeer' : 'BER_VolkerakZoommeer', 'Bovenmaas' : 'BOR_Maas',
-                'Maas_hk' : 'BOR_MaasHK', 'Rijn':'BOR_Rijn', 'Kust-Dijken':'KST-Dijken', 'Kust duinen':'KST_Duinen', 
-                'Oosterschelde':'KST_Oosterschelde', 'Grevelingen':'MRN_Grevelingen', 'MRN_IJsselmeer':'IJsselmeer', 
-                'Markermeer':'MRN_Markermeer', 'Veluwerandmeren':'MRN_Veluwerandmeren', 'IJsseldelta':'YVD_IJsseldelta',
-                'Vechtdelta':'YVD_Vechtdelta'}
+                          
     mapname = mapname_dict[watersysteem]
 
     # Base path to the project drive
