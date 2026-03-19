@@ -4,7 +4,8 @@ function to set paths depending on the company folder structure
 BOI verschil en effectanalyse 
 Witteveen+Bos & HKV 2026
 '''
-
+import os
+import zipfile
 from pathlib import Path
 
 def get_directories(company_name):

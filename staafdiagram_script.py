@@ -25,7 +25,7 @@ def staafdiagram_script(files,
     mapname_dict = {'Europoort' : 'BER_Eprt', 'Hollandsche IJssel' : 'BER_HollandscheIJssel', 'Benedenmaas': 'BER_Maas',
                 'Rijntakken':'BER_Rijn', 'VolkerakZoommeer' : 'BER_VolkerakZoommeer', 'Bovenmaas' : 'BOR_Maas',
                 'Maas_hk' : 'BOR_MaasHK', 'Rijn':'BOR_Rijn', 'Kust-Dijken':'KST-Dijken', 'Kust duinen':'KST_Duinen', 
-                'Oosterschelde':'KST_Oosterschelde', 'Grevelingen':'MRN_Grevelingen', 'IJsselmeer':'MRN_IJsselmeer', 
+                'Oosterschelde':'KST_Oosterschelde', 'Grevelingen':'MRN_Grevelingen', 'MRN_IJsselmeer':'IJsselmeer', 
                 'Markermeer':'MRN_Markermeer', 'Veluwerandmeren':'MRN_Veluwerandmeren', 'IJsseldelta':'YVD_IJsseldelta',
                 'Vechtdelta':'YVD_Vechtdelta'}
     mapname = mapname_dict[watersysteem]
@@ -128,17 +128,17 @@ def staafdiagram_script(files,
 if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
-    sp_base_path = r"C:\Users\Molendijk\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen BOR - Rijntakken'
-    som_versie = 'aslocaties - concept_20260219'
-    watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_BOR_Rijn_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    project_fase = 'WP02a Beoordelen Meren'
+    som_versie = 'aslocaties - concept_20260316'
+    watersysteem = 'MRN_IJsselmeer' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
+    zip_file_name = "HydraNL_BI2023_MRN_IJsselmeer_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
     parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl2") # opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl") # opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter)
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     staafdiagram_script(files,
                         save_dir = save_dir,
-                        watersysteem = 'Rijn',
+                        watersysteem = 'MRN_IJsselmeer',
                         parameter='ws',
                         location_type=["as"],
                         locations = None,
