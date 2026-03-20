@@ -33,7 +33,7 @@ def get_parameter_settings(csv_path: str):
 
     raise ValueError("Cannot determine parameter from file name.")
 
-def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
+def plot_waterstand_series_with_difference(csv_path: str, parameter, reference_name, simulation_types) -> pd.DataFrame:
     """
     Plots:
     Top subplot:
@@ -46,7 +46,7 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
     Returns dataframe of csv file, plots in the process.
     """
     #based on the name of the csv file, we can determine the used parameter (voelt nog wat omslachtig)
-    parameter, parameter_name, parameter_unit, parameter_short, parameter_diff_unit = get_parameter_settings(csv_path)
+    #parameter, parameter_name, parameter_unit, parameter_short, parameter_diff_unit = get_parameter_settings(csv_path)
     
     # TODO: check of datum van csv klopt met verwachte datum (namelijk 'jonger' dan de laatste bijbehorende HydraNL/Riskeer run)
 
@@ -66,16 +66,8 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
 
     series_names = df["Serie"].unique()
 
-    # Find reference TODO: aanpassen naar naamgeving BOI
-    ref_candidates = [s for s in series_names if "BI2023-totaalBI-met" in s]
-
-    if not ref_candidates:
-        raise ValueError("No Serie containing 'BI2023-totaalBI-met' found as reference.") #TODO: aanpassen naar naamgeving BOI
-
-    ref_name = ref_candidates[0]
-
     # Plot setup
-    fig = plt.figure(figsize=(9, 9))
+    fig = plt.figure(figsize=(8, 9))
 
     gs = fig.add_gridspec(3, 1, height_ratios=[2, 2, 2])
 
@@ -87,42 +79,43 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
     for serie, group in df.groupby("Serie"):
         group = group.sort_values("km", ascending=False)
 
-        if 'totaalBI' in serie:
-                linestyle = 'solid'
-                linewidth = 1
-        else:
-                linestyle = 'dotted' 
-                linewidth = 2
-
         ax1.plot(
             group["km"],
-            group[parameter],
-            lw=linewidth,
-            linestyle=linestyle,
-            color=colors_dict[serie],
+            group[parameters[parameter][0]], # parameter_short
+            lw=colors_dict[serie][1],
+            linestyle=colors_dict[serie][2],
+            color=colors_dict[serie][0],
             label=legend_dict[serie]
 
         )
 
     ax1.tick_params(labelbottom=True)
     ax1.set_xlabel("Rivierkilometer (km)")
-    ax1.set_ylabel(f"{parameter_name} ({parameter_unit})")
+    ax1.set_ylabel(parameters[parameter][0])
     ax1.grid(True)
-    ax1.legend()
+    handles, labels = ax1.get_legend_handles_labels()
+    items = [(order_dict.get(label, 999), label, handle)
+            for label, handle in zip(labels, handles)]
+    items.sort(key=lambda x: x[0])
+
+    sorted_labels = [item[1] for item in items]
+    sorted_handles = [item[2] for item in items]
+
+    legend = ax1.legend(sorted_handles, sorted_labels, loc='upper left', fontsize=7)
 
     # Difference subplot
-    ref = df[df["Serie"] == ref_name][["km", parameter]]
-    ref = ref.rename(columns={parameter: "ref_" + parameter_short})
+    ref = df[df["Serie"] == reference_name][["km", parameters[parameter][0]]]
+    ref = ref.rename(columns={parameters[parameter][0]: "ref_" + parameters[parameter][0]})
 
     for serie, group in df.groupby("Serie"):
-        if serie == ref_name:
+        if serie == reference_name:
             continue
 
-        other = group[["km", parameter]]
-        other = other.rename(columns={parameter: parameter_short})
+        other = group[["km", parameters[parameter][0]]]
+        other = other.rename(columns={parameters[parameter][0]: parameters[parameter][0]})
 
         merged = ref.merge(other, on="km", how="inner")
-        merged["diff"] = merged["ref_" + parameter_short] - merged[parameter_short]
+        merged["diff"] = merged["ref_" + parameters[parameter][0]] - merged[parameters[parameter][0]]
 
         if 'totaalBI' in serie:
                 linestyle = 'solid'
@@ -134,17 +127,28 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
         ax2.plot(
             merged["km"],
             merged["diff"],
-            lw=linewidth,
-            linestyle=linestyle,
-            color=colors_dict[serie],
+            lw=colors_dict[serie][1],
+            linestyle=colors_dict[serie][2],
+            color=colors_dict[serie][0],
             label=legend_dict[serie]
         )
 
     ax2.set_xlabel("Rivierkilometer (km)")
-    ax2.set_ylabel(f"Δ {parameter_name} ({parameter_diff_unit})")
-    ax2.set_title(f"Verschil (BOI - serie)")
+    ylabel_diff = parameters[parameter][1]
+    ylabel_diff_unit = parameters[parameter][4]
+    ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI ({ylabel_diff_unit})"
+    ax2.set_ylabel(ylabel_plot_diff)
+    #ax2.set_title(f"Verschil (BOI - serie)")
     ax2.grid(True)
-    ax2.legend()
+    handles, labels = ax2.get_legend_handles_labels()
+    items = [(order_dict.get(label, 999), label, handle)
+            for label, handle in zip(labels, handles)]
+    items.sort(key=lambda x: x[0])
+
+    sorted_labels = [item[1] for item in items]
+    sorted_handles = [item[2] for item in items]
+
+    legend = ax2.legend(sorted_handles, sorted_labels, loc='upper left', fontsize=7)
 
     # Reverse axis for river convention
     ax1.invert_xaxis()
@@ -212,5 +216,10 @@ def plot_waterstand_series_with_difference(csv_path: str) -> pd.DataFrame:
     return df
 
 if __name__ == "__main__":
-    df = plot_waterstand_series_with_difference("z:\\149287_BOI_verschil_en_effectanalyse\\data\\viewer_export\\B2035_Wind_BER-RIJN_B2035_MxWd_WS_BOI.csv")
-    #TODO: pas hier het pad aan naar de juiste csv file
+
+    parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
+    simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
+
+    df = plot_waterstand_series_with_difference("z:\\149287_BOI_verschil_en_effectanalyse\\data\\viewer_export\\B2035_Wind_BER-RIJN_B2035_MxWd_ws_BOI.csv", 
+                                                simulation_types = simulation_types, parameter = parameter, reference_name = 'BI2023-totB2023-zon')
+    

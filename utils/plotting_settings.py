@@ -4,6 +4,8 @@ BOI verschil en effectanalyse
 Witteveen+Bos & HKV 2026
 '''
 
+import matplotlib.transforms as mtransforms
+
 parameters = {
     "ws":  ("Waterstand (m+NAP)", "waterstand", "m+NAP", "ws", "m"),
     "HBN": ("HBN (m+NAP)",       "HBN",        "m+NAP", "hbn", "m"),
@@ -52,7 +54,6 @@ order_dict = {
         legend_dict['BI2023-onzB2017-met']: 7, 
         legend_dict['BI2023-totB2023-met']: 2
     }
-import matplotlib.transforms as mtransforms
 
 def annotate_BOI_higher_lower(ax):
 
