@@ -23,6 +23,7 @@ def staafdiagram_script(files,
     TT_prob = 1/TT
                           
     mapname = mapname_dict[watersysteem]
+    diff_unit = parameters[parameter][4]
 
     # Base path to the project drive
     if watersysteem == 'HollandscheIJssel':
@@ -87,27 +88,27 @@ def staafdiagram_script(files,
     # Create bar plot
     # categories = [f'BOI {int(up*100)}cm hoger dan WBI', r'$$' , f'BOI {int(up*100)}cm lager dan WBI']
     categories = [
-    f'Minder dan -{int(up*100)}cm',
-    '-40 tot -50cm',
-    '-30 tot -40cm',
-    '-20 tot -30cm',
-    '-10 tot -20cm',
-    '0 tot -10cm',
+    f'< -{int(up*100)}cm',
+    '-50 tot -40cm',
+    '-40 tot -30cm',
+    '-30 tot -20cm',
+    '-20 tot -10cm',
+    '-10 tot 0cm',
     '0 tot 10cm',
     '10 tot 20cm',
     '20 tot 30cm',
     '30 tot 40cm',
     '40 tot 50cm',
-    f'Meer dan {int(abs(lo)*100)}cm']
+    f'> {int(abs(lo)*100)}cm']
     counts = [lager, bin_n50_n40, bin_n40_n30, bin_n30_n20, bin_n20_n10, bin_n10_00, bin_00_10, bin_10_20, bin_20_30, bin_30_40, bin_40_50, hoger]
 
     plt.figure(figsize=(8, 6))
     plt.bar(categories, counts, color=['gray', 'gray', 'gray','gray', 'gray', 'gray', 'gray', 'gray', 'gray', 'gray', 'gray', 'gray'])
     plt.ylabel(f'Fractie locaties in {watersysteem}')
-    plt.xlabel('Verschil WBI minus BOI')
-    plt.title(f'Waarde bij T={TT} van {simulation_types[0]} t.o.v. {simulation_types[1]}')
+    plt.xlabel(f'Verschil WBI minus BOI [{diff_unit}]')
+    plt.title(f'Verschil in {parameters[parameter][1]} bij T = {TT} jaar \n {simulation_types[0]} - {simulation_types[1]}')
     plt.grid(True, alpha=0.3, axis='y')
-    plt.xticks(rotation=45, ha='right')
+    plt.xticks(rotation=20, ha='center',fontsize=9)
     plt.tight_layout()
     
     # naam maken en directory controlerenen aanmaken indien nodig

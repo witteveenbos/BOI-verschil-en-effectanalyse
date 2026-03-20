@@ -5,7 +5,7 @@ Witteveen+Bos & HKV 2026
 '''
 
 parameters = {
-    "WS":  ("Waterstand (m+NAP)", "waterstand", "m+NAP", "ws", "m"),
+    "ws":  ("Waterstand (m+NAP)", "waterstand", "m+NAP", "ws", "m"),
     "HBN": ("HBN (m+NAP)",       "HBN",        "m+NAP", "hbn", "m"),
     "Hs":  ("Hs (m)",            "Hs",         "m",     "hs",  "m"),
     "Tp":  ("Tp (s)",            "Tp",         "s",     "tp",  "s"),
