@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from pathlib import PurePosixPath
+import textwrap
 
 from utils.readers import read_hfreq_file_new
 from utils.directories import get_parameter_file_paths
@@ -175,9 +176,9 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
 
             # Save contributions to a dictionary for later use in plotting
             contributions_dict = {
-                'Fysica': {'value': fys_contr, 'color': colors_dict['BI2023-fysB2017-zon'][0]},
-                'Statistiek': {'value': stk_contr, 'color': colors_dict['BI2023-stkB2017-zon'][0]},
-                'Rekeninstellingen': {'value': rkn_contr, 'color': colors_dict['BI2023-rknB2017-zon'][0]},
+                'WBI fysica': {'value': fys_contr, 'color': colors_dict['BI2023-fysB2017-zon'][0]},
+                'WBI statistiek': {'value': stk_contr, 'color': colors_dict['BI2023-stkB2017-zon'][0]},
+                'WBI rekeninstellingen': {'value': rkn_contr, 'color': colors_dict['BI2023-rknB2017-zon'][0]},
                 'Totaal zonder ': {'value': tot_zon_contr, 'color': colors_dict['BI2017-totB2017-zon'][0]},
                 'Totaal met': {'value': tot_met_contr, 'color': colors_dict['BI2017-totB2017-met'][0]},
                 'Riskeer': {'value': riskeer_contr, 'color': 'purple'}
@@ -281,10 +282,9 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             ax_bar.grid(True, axis='y', alpha=0.3, zorder = 0)
 
             labels = list(contributions_dict.keys())
-            import textwrap
             wrapped_labels = [textwrap.fill(label, width=20) for label in labels]
             ax_bar.set_xticklabels(wrapped_labels)
-            ax_bar.set_title(f"Individuele bijdrage bij T = {select_return_period} jaar", fontsize=12, fontweight='bold')
+            ax_bar.set_title(f"Individuele bijdrage bij T = {select_return_period} jaar", fontsize=11)
             # ax_diff.set_xticklabels(ax_diff.get_xticks())  # Zorg dat labels zichtbaar blijven
             # ax_diff.set_xlabel("Terugkeertijd (jaar)", fontsize=11)
 
@@ -326,7 +326,7 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    #sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
     project_fase = 'WP02a Beoordelen BOR - Rijntakken'
     som_versie = 'aslocaties - concept_20260219'
     watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
