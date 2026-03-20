@@ -12,15 +12,9 @@ parameters = {
 }
 
 colors_dict = {
-<<<<<<< Updated upstream
-            'BI2017-totB2017-zon': ('lightblue', 1.5, 'dashed'), 
-            'BI2023-fysB2017-zon': ('hotpink', 1.5, 'dotted'), 
-            'BI2023-stkB2017-zon': ('lightgreen', 1.5, 'dashdot'), 
-=======
             'BI2017-totB2017-zon': ('dodgerblue', 1.5, 'dashed'), 
             'BI2023-fysB2017-zon': ('hotpink', 1.5, 'solid'), 
             'BI2023-stkB2017-zon': ('lightgreen', 1.5, 'solid'), 
->>>>>>> Stashed changes
             'BI2023-rknB2017-zon': ('purple', 1.5, 'dotted'), 
             'BI2023-totB2023-zon': ('orange', 1.5, 'dashed'), 
             'BI2017-totB2017-met': ('darkblue', 2, 'solid'), 
