@@ -28,7 +28,6 @@ def get_directories(company_name):
     
     return directory_path, save_dir
 
-
 def get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersysteem, zip_file_name, parameter):
     """
     Returns a list of full paths (zip_path + internal path)
@@ -71,3 +70,16 @@ def get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersystee
                 found_files.append(full_virtual_path)
 
     return found_files
+
+if __name__ == "__main__":
+    sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    project_fase = "WP02a Beoordelen Meren"
+    som_versie = "oeverlocaties - concept_20260221"
+    watersysteem = "MRN_Grevelingen"
+
+    parameter = "ws"
+
+    files = get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersysteem, parameter)
+
+    for f in files:
+        print(f)
