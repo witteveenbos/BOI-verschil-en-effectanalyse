@@ -12,11 +12,11 @@ parameters = {
 }
 
 colors_dict = {
-            'BI2017-totB2017-zon': ('lightblue', 2, 'dashed'), 
-            'BI2023-fysB2017-zon': ('hotpink', 2, 'dotted'), 
-            'BI2023-stkB2017-zon': ('lightgreen', 2, 'dashdot'), 
-            'BI2023-rknB2017-zon': ('purple', 2, 'dotted'), 
-            'BI2023-totB2023-zon': ('orange', 2, 'dashed'), 
+            'BI2017-totB2017-zon': ('dodgerblue', 1.5, 'dashed'), 
+            'BI2023-fysB2017-zon': ('hotpink', 1.5, 'solid'), 
+            'BI2023-stkB2017-zon': ('lightgreen', 1.5, 'solid'), 
+            'BI2023-rknB2017-zon': ('purple', 1.5, 'dotted'), 
+            'BI2023-totB2023-zon': ('orange', 1.5, 'dashed'), 
             'BI2017-totB2017-met': ('darkblue', 2, 'solid'), 
             'BI2023-onzB2017-met': ('darkgreen', 2, 'solid'), 
             'BI2023-totB2023-met': ('red', 2, 'solid')
