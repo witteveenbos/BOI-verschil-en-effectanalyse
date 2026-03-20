@@ -5,6 +5,8 @@ BOI verschil en effectanalyse
 Witteveen+Bos & HKV 2026
 '''
 import numpy as np
+import zipfile 
+import io 
 
 def read_hfreq_file(filepath):
     """
@@ -29,11 +31,6 @@ def read_hfreq_file(filepath):
         print(f"Error reading {filepath}: {e}")
     return None, None
 
-import zipfile
-import io
-import os
-
-
 def read_hfreq_file_new(filepath):
     """
     Read hfreq.txt file (supports files inside zip archives).
@@ -49,7 +46,7 @@ def read_hfreq_file_new(filepath):
         if ".zip" in filepath.lower():
             zip_index = filepath.lower().find(".zip")
             zip_path = filepath[:zip_index + 4]
-            internal_path = filepath[zip_index + 5:]  # skip "\" after .zip
+            internal_path = filepath[zip_index + 5:].replace("\\", "/")
 
             with zipfile.ZipFile(zip_path, 'r') as z:
                 with z.open(internal_path) as f:

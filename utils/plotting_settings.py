@@ -18,14 +18,16 @@ colors_dict = {
             'BI2023-rknB2017-zon': ('purple', 1.5, 'dotted'), 
             'BI2023-totB2023-zon': ('orange', 1.5, 'dashed'), 
             'BI2017-totB2017-met': ('darkblue', 2, 'solid'), 
-            'BI2023-onzB2017-met': ('darkgreen', 1.5, 'solid'), 
+            'BI2023-onzB2017-met': ('darkgreen', 2, 'solid'), 
             'BI2023-totB2023-met': ('red', 2, 'solid')
         }
 
 legend_dict = {
             'BI2017-totB2017-zon': 'WBI2017 (totaal, zonder modelonzekerheid)', 
             'BI2023-fysB2017-zon': 'BOI2023 (met WBI2017 fysica, zonder modelonzekerheid)', 
+            #'BI2023-fysB2017-zon': 'WBI2017 met BOI2023 statistiek (zonder modelonzekerheid)', 
             'BI2023-stkB2017-zon': 'BOI2023 (met WBI2017 statistiek, zonder modelonzekerheid)', 
+            #'BI2023-stkB2017-zon': 'WBI2017 met BOI2023 fysica (zonder modelonzekerheid)', 
             'BI2023-rknB2017-zon': 'BOI2023 (met WBI2017 rekeninstellingen, zonder modelonzekerheid)', 
             'BI2023-totB2023-zon': 'BOI2023 (totaal, zonder modelonzekerheid)', 
             'BI2017-totB2017-met': 'WBI2017 (totaal, met modelonzekerheid)', 
@@ -41,14 +43,14 @@ ylabel_dict = {
 }
 
 order_dict = {
-        legend_dict['BI2017-totB2017-zon']: 3, 
+        legend_dict['BI2017-totB2017-zon']: 1, 
         legend_dict['BI2023-fysB2017-zon']: 4, 
         legend_dict['BI2023-stkB2017-zon']: 5, 
         legend_dict['BI2023-rknB2017-zon']: 6, 
-        legend_dict['BI2023-totB2023-zon']: 1, 
-        legend_dict['BI2017-totB2017-met']: 2, 
+        legend_dict['BI2023-totB2023-zon']: 3, 
+        legend_dict['BI2017-totB2017-met']: 0, 
         legend_dict['BI2023-onzB2017-met']: 7, 
-        legend_dict['BI2023-totB2023-met']: 0
+        legend_dict['BI2023-totB2023-met']: 2
     }
 import matplotlib.transforms as mtransforms
 

@@ -33,6 +33,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
     Main function to read and plot hfreq data.
     
     Args:
+        files (list): List of file paths to (h)freq.txt files. These can be paths inside zip files, in the format "zip_path\\internal_path".
         watersysteem (str): Name of the water system (e.g., "HollandscheIJssel", "Rijntakken")
                            If None, gives error
         simulation_types (list): List of simulation type filters (e.g., ["2017-totaal-zon_WS", "2023-fysica-met_HBN"])
@@ -42,8 +43,6 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
         locations (str or list): Location(s) to filter by. Can be location IDs (e.g., "as_0001")
                                 or location codes from parent folder (e.g., "as" from folder ending in "_as")
                                 If none is given, all locations are included
-        parameter (str) : Name of the parameter of interest. This is to be used only when simulation_types is None, so that all simulation_types of a single parameter are plotted in the same figure (rather than multiple parameters' return times in a single figure).
-                                Some examples of possible values: 'HBN', 'WS', 'Tp', 'Hs'
         colors_dict (dict) : Maps simulation_type to a plotting color.
                                 If none is given, a standard template is used which is read from utils.plotting_settings.
 
@@ -81,7 +80,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
         parameter_name = list(computations.keys())[0].split('_')[-1]
         ylabel = parameters[parameter_name][0]
 
-        # --- Create figure (1 or 2 panels depending on availability reference)
+        ## 2.1 Prepare figure and axes
         if has_reference:
             if add_bars:
                 fig = plt.figure(figsize=(8, 12))
@@ -240,7 +239,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
         ax.set_xlim(10, 10e5)
         ax.set_xscale('log')
         ax.grid(True, which='both', alpha=0.3)
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
+        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.5))
 
         # 2.4.5 ylim logic 
         max_ylim_value = -np.inf
