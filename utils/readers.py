@@ -5,6 +5,8 @@ BOI verschil en effectanalyse
 Witteveen+Bos & HKV 2026
 '''
 import numpy as np
+import zipfile 
+import io 
 
 def read_hfreq_file(filepath):
     """
@@ -28,11 +30,6 @@ def read_hfreq_file(filepath):
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
     return None, None
-
-import zipfile
-import io
-import os
-
 
 def read_hfreq_file_new(filepath):
     """
