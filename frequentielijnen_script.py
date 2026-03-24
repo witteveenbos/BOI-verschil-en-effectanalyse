@@ -28,6 +28,12 @@ def get_group(name):
     else:
         return None
 
+def safe_diff(dict_obj, key_a, key_b):
+    """Return difference if both keys exist, otherwise None"""
+    if key_a in dict_obj and key_b in dict_obj:
+        return dict_obj[key_a] - dict_obj[key_b]
+    return None
+
 def main_frequentielijn(files, watersysteem = None, simulation_types = None, reference_name = 'BI2023-totB2023-met', locations = None, colors_dict = colors_dict, save_dir = None, add_bars = False, select_return_period = None):
     """
     Main function to read and plot hfreq data.
@@ -165,23 +171,56 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     wl_interp = np.interp(np.log(select_return_period), np.log(T), water_level) # logaritmic interpolation
                     contributions[computation_name] = wl_interp
 
-            # Calculate contributions 
-            fys_contr = contributions['BI2023-fysB2017-zon'] - contributions['BI2023-totB2023-zon']
-            stk_contr = contributions['BI2023-stkB2017-zon'] - contributions['BI2023-totB2023-zon']
-            rkn_contr = contributions['BI2023-rknB2017-zon'] - contributions['BI2023-totB2023-zon']
-            tot_zon_contr = contributions['BI2017-totB2017-zon'] - contributions['BI2023-totB2023-zon']
-            tot_met_contr = contributions['BI2017-totB2017-met'] - contributions['BI2023-totB2023-met']
-            riskeer_contr = contributions['BI2017-totB2017-met'] - contributions['BI2023-totB2023-met'] + 0.05  # nog niet bepaald, voorlopig 5 cm erbij
+            fys_contr = safe_diff(contributions, 'BI2023-fysB2017-zon', 'BI2023-totB2023-zon')
+            stk_contr = safe_diff(contributions, 'BI2023-stkB2017-zon', 'BI2023-totB2023-zon')
+            rkn_contr = safe_diff(contributions, 'BI2023-rknB2017-zon', 'BI2023-totB2023-zon')
+            tot_zon_contr = safe_diff(contributions, 'BI2017-totB2017-zon', 'BI2023-totB2023-zon')
+            tot_met_contr = safe_diff(contributions, 'BI2017-totB2017-met', 'BI2023-totB2023-met')
 
-            # Save contributions to a dictionary for later use in plotting
-            contributions_dict = {
-                'WBI fysica': {'value': fys_contr, 'color': colors_dict['BI2023-fysB2017-zon'][0]},
-                'WBI statistiek': {'value': stk_contr, 'color': colors_dict['BI2023-stkB2017-zon'][0]},
-                'WBI rekeninstellingen': {'value': rkn_contr, 'color': colors_dict['BI2023-rknB2017-zon'][0]},
-                'Totaal zonder ': {'value': tot_zon_contr, 'color': colors_dict['BI2017-totB2017-zon'][0]},
-                'Totaal met': {'value': tot_met_contr, 'color': colors_dict['BI2017-totB2017-met'][0]},
-                'Riskeer': {'value': riskeer_contr, 'color': 'purple'}
-            }
+            # Riskeer set to none
+            riskeer_contr = None
+
+            # --------------------------------------------------
+            # Build dictionary only with available contributions
+            # --------------------------------------------------
+
+            contributions_dict = {}
+
+            if fys_contr is not None:
+                contributions_dict['WBI fysica'] = {
+                    'value': fys_contr,
+                    'color': colors_dict['BI2023-fysB2017-zon'][0]
+                }
+
+            if stk_contr is not None:
+                contributions_dict['WBI statistiek'] = {
+                    'value': stk_contr,
+                    'color': colors_dict['BI2023-stkB2017-zon'][0]
+                }
+
+            if rkn_contr is not None:
+                contributions_dict['WBI rekeninstellingen'] = {
+                    'value': rkn_contr,
+                    'color': colors_dict['BI2023-rknB2017-zon'][0]
+                }
+
+            if tot_zon_contr is not None:
+                contributions_dict['Totaal zonder'] = {
+                    'value': tot_zon_contr,
+                    'color': colors_dict['BI2017-totB2017-zon'][0]
+                }
+
+            if tot_met_contr is not None:
+                contributions_dict['Totaal met'] = {
+                    'value': tot_met_contr,
+                    'color': colors_dict['BI2017-totB2017-met'][0]
+                }
+
+            if riskeer_contr is not None:
+                contributions_dict['Riskeer'] = {
+                    'value': riskeer_contr,
+                    'color': 'purple'
+                }
 
 
         ## 2.4 Plotting routine loop over all computations for this location
@@ -326,16 +365,16 @@ if __name__ == "__main__":
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
     #sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen BOR - Rijntakken'
-    som_versie = 'aslocaties - concept_20260219'
-    watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_BOR_Rijn_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    project_fase = 'WP02a Beoordelen Meren'
+    som_versie = 'aslocaties - concept_20260316'
+    watersysteem = 'MRN_Grevelingen' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
+    zip_file_name = "HydraNL_BI2023_MRN_Grevelingen_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
     parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "test") #"fl2", opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl") #"fl2", opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
@@ -343,9 +382,9 @@ if __name__ == "__main__":
     # 1. eerste frequentielijn plot actie met totaal BOI WBI vergelijking, zowel met als zonder modelonzekerheid
     simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2023-totB2023-zon','BI2023-totB2023-met'],
-                        locations = ['as_0171_BR_km0865'], save_dir = save_dir, add_bars = True, select_return_period = 10000)
+                        save_dir = save_dir, add_bars = True, select_return_period = 10000)
 
     # 2. tweede frequentielijn plot actie met detail BOI vergelijking, waarbij we de verschillende BOI simulaties vergelijken met elkaar (dus zonder de WBI2017 referentie)
     simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
-                        locations = ['as_0171_BR_km0865'], save_dir = save_dir)
+                        save_dir = save_dir)
