@@ -8,9 +8,10 @@ import matplotlib.transforms as mtransforms
 
 parameters = {
     "ws":  ("Waterstand (m+NAP)", "waterstand", "m+NAP", "ws", "m"),
-    "HBN": ("HBN (m+NAP)",       "HBN",        "m+NAP", "hbn", "m"),
-    "Hs":  ("Hs (m)",            "Hs",         "m",     "hs",  "m"),
-    "Tp":  ("Tp (s)",            "Tp",         "s",     "tp",  "s"),
+    "go": ("HBN (m+NAP)",       "HBN",        "m+NAP", "hbn", "m"),
+    "hs":  ("Hs (m)",            "Hs",         "m",     "hs",  "m"),
+    "tp":  ("Tp (s)",            "Tp",         "s",     "tp",  "s"),
+    "ts":  ("Tm (s)",            "Tm",         "s",     "ts",  "s"),
 }
 
 colors_dict = {
@@ -39,9 +40,10 @@ legend_dict = {
 
 ylabel_dict = {
     'ws' : 'Waterstand (m+NAP)',
-    'HBN' : 'HBN (m+NAP)',
-    'Tp' : 'Golfperiode (s)',
-    'Hs' : 'Significante golfhoogte (m)'
+    'go' : 'HBN (m+NAP)',
+    'tp' : 'Golfperiode (s)',
+    'hs' : 'Significante golfhoogte (m)',
+    'ts' : 'Gemiddelde golfperiode (s)'
 }
 
 order_dict = {

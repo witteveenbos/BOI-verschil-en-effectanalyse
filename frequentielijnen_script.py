@@ -80,6 +80,10 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                                 If none is given, a standard template is used which is read from utils.plotting_settings.
 
     """
+    ## 0. prepare log grid
+    # Fixed logarithmic interpolation grid: 10, 100, 1000, ..., 10,000,000 years
+    interp_T_grid = np.logspace(1, 8, 8)
+
     ## 1. Prepare data structure for storing data by location and simulation type
     data_by_location = defaultdict(dict)
 
@@ -198,8 +202,8 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     sort_idx = np.argsort(T)
                     T_sorted = T[sort_idx]
                     wl_sorted = water_level[sort_idx]
-                    wl_interp = np.interp(np.log(select_return_period), np.log(T_sorted), wl_sorted) # logaritmic interpolation
-
+                    wl_on_grid = np.interp(np.log(interp_T_grid), np.log(T_sorted), wl_sorted)
+                    wl_interp = np.interp(np.log(select_return_period), np.log(interp_T_grid), wl_on_grid)
                     contributions[computation_name] = wl_interp
 
             fys_contr = safe_diff(contributions, 'BI2023-fysB2017-zon', 'BI2023-totB2023-zon')
@@ -289,19 +293,17 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     T_sorted = return_period[sort_idx]
                     wl_sorted = water_level[sort_idx]
 
-                    # bepaal ref_T_log en T_sorted_log en if select_return_period exists
-                    ref_T_plot, ref_wl_plot = add_interpolated_return_period_point(ref_T, ref_wl, select_return_period)
-                    T_sorted_plot, wl_sorted_plot = add_interpolated_return_period_point(T_sorted, wl_sorted, select_return_period)
-                    wl_interp = np.interp(np.log(ref_T_plot), np.log(T_sorted_plot), wl_sorted_plot) # logaritmic interpolation
-                    diff = wl_interp - ref_wl_plot
+                    wl_interp = np.interp(np.log(interp_T_grid), np.log(T_sorted), wl_sorted)
+                    ref_interp = np.interp(np.log(interp_T_grid), np.log(ref_T), ref_wl)
+                    diff = wl_interp - ref_interp
 
-                    ax_diff.plot(ref_T_plot, diff,
+                    ax_diff.plot(interp_T_grid, diff,
                                 color=color,
                                 linestyle=linestyle,
                                 linewidth=linewidth,
                                 label=legend_name,
                                 zorder=order)
-        
+                    
         # 2.4.3 add bar chart for contributions at selected return period (OPTIONAL)
         if add_bars:
             ax_bar.bar(contributions_dict.keys(), [contributions_dict[key]['value'] for key in contributions_dict.keys()],
@@ -410,7 +412,7 @@ if __name__ == "__main__":
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "test") #"fl2", opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl") #"fl2", opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
