@@ -275,10 +275,6 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                                 label=legend_name,
                                 zorder=order)
                     
-                    ax_diff.scatter(interp_T_grid, diff,
-                                color=color,
-                                )
-        
         # 2.4.3 add bar chart for contributions at selected return period (OPTIONAL)
         if add_bars:
             ax_bar.bar(contributions_dict.keys(), [contributions_dict[key]['value'] for key in contributions_dict.keys()],
