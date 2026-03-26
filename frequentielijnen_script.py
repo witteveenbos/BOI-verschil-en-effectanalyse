@@ -264,22 +264,18 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     T_sorted = return_period[sort_idx]
                     wl_sorted = water_level[sort_idx]
 
-                    common_grid = interp_T_grid[(interp_T_grid >= max(np.min(T_sorted), np.min(ref_T))) & (interp_T_grid <= min(np.max(T_sorted), np.max(ref_T)))]
-                    if common_grid.size == 0:
-                        continue
-
-                    wl_interp = np.interp(np.log(common_grid), np.log(T_sorted), wl_sorted)
-                    ref_interp = np.interp(np.log(common_grid), np.log(ref_T), ref_wl)
+                    wl_interp = np.interp(np.log(interp_T_grid), np.log(T_sorted), wl_sorted)
+                    ref_interp = np.interp(np.log(interp_T_grid), np.log(ref_T), ref_wl)
                     diff = wl_interp - ref_interp
 
-                    ax_diff.plot(common_grid, diff,
+                    ax_diff.plot(interp_T_grid, diff,
                                 color=color,
                                 linestyle=linestyle,
                                 linewidth=linewidth,
                                 label=legend_name,
                                 zorder=order)
                     
-                    ax_diff.scatter(common_grid, diff,
+                    ax_diff.scatter(interp_T_grid, diff,
                                 color=color,
                                 )
         
