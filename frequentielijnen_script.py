@@ -34,7 +34,34 @@ def safe_diff(dict_obj, key_a, key_b):
         return dict_obj[key_a] - dict_obj[key_b]
     return None
 
-def main_frequentielijn(files, watersysteem = None, simulation_types = None, reference_name = 'BI2023-totB2023-met', locations = None, colors_dict = colors_dict, save_dir = None, add_bars = False, select_return_period = None):
+def add_interpolated_return_period_point(return_period, values, target_return_period):
+    """Insert an interpolated point at the requested return period for plotting."""
+    sort_idx = np.argsort(return_period)
+    T_sorted = return_period[sort_idx]
+    values_sorted = values[sort_idx]
+
+    if target_return_period is None:
+        return T_sorted, values_sorted
+
+    if np.any(np.isclose(T_sorted, target_return_period, rtol=0.0, atol=1e-9)):
+        return T_sorted, values_sorted
+
+    if target_return_period <= T_sorted[0] or target_return_period >= T_sorted[-1]:
+        return T_sorted, values_sorted
+
+    interpolated_value = np.interp(
+        np.log(target_return_period),
+        np.log(T_sorted),
+        values_sorted
+    )
+    insert_idx = np.searchsorted(T_sorted, target_return_period)
+
+    T_with_target = np.insert(T_sorted, insert_idx, target_return_period)
+    values_with_target = np.insert(values_sorted, insert_idx, interpolated_value)
+
+    return T_with_target, values_with_target
+
+def main_frequentielijn(files, watersysteem = None, simulation_types = None, reference_name = 'BI2023-totB2023-met', locations = None, colors_dict = colors_dict, save_dir = None, add_bars = False, select_return_period = 10000):
     """
     Main function to read and plot hfreq data.
     
@@ -241,7 +268,9 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
 
             # 2.4.1 top as
             if computation_name.split('_')[0] in simulation_types:
-                ax.plot(return_period, water_level,
+                return_period_plot, water_level_plot = add_interpolated_return_period_point(return_period, water_level, select_return_period)
+
+                ax.plot(return_period_plot, water_level_plot,
                         label=legend_name, linewidth=linewidth,
                         color=color, linestyle=linestyle, zorder=order)
 
@@ -373,7 +402,7 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    #sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
     project_fase = 'WP02a Beoordelen Meren'
     som_versie = 'aslocaties - concept_20260316'
     watersysteem = 'MRN_Grevelingen' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
@@ -383,7 +412,7 @@ if __name__ == "__main__":
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl_Test2") #"fl2", opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl") #"fl2", opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
