@@ -53,6 +53,10 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                                 If none is given, a standard template is used which is read from utils.plotting_settings.
 
     """
+    ## 0. prepare log grid
+    # Fixed logarithmic interpolation grid: 10, 100, 1000, ..., 10,000,000 years
+    interp_T_grid = np.logspace(1, 8, 8)
+
     ## 1. Prepare data structure for storing data by location and simulation type
     data_by_location = defaultdict(dict)
 
@@ -168,7 +172,11 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                 computation_name = computation_name.split('_')[0]
                 if computation_name in ['BI2023-fysB2017-zon', 'BI2023-stkB2017-zon', 'BI2023-rknB2017-zon', 'BI2017-totB2017-zon', 'BI2017-totB2017-met', 'BI2023-totB2023-zon', 'BI2023-totB2023-met']:
                     T = 1.0 / frequency
-                    wl_interp = np.interp(np.log(select_return_period), np.log(T), water_level) # logaritmic interpolation
+                    sort_idx = np.argsort(T)
+                    T_sorted = T[sort_idx]
+                    wl_sorted = water_level[sort_idx]
+                    wl_on_grid = np.interp(np.log(interp_T_grid), np.log(T_sorted), wl_sorted)
+                    wl_interp = np.interp(np.log(select_return_period), np.log(interp_T_grid), wl_on_grid)
                     contributions[computation_name] = wl_interp
 
             fys_contr = safe_diff(contributions, 'BI2023-fysB2017-zon', 'BI2023-totB2023-zon')
@@ -256,15 +264,24 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     T_sorted = return_period[sort_idx]
                     wl_sorted = water_level[sort_idx]
 
-                    wl_interp = np.interp(np.log(ref_T), np.log(T_sorted), wl_sorted) # logaritmic interpolation
-                    diff = wl_interp - ref_wl
+                    common_grid = interp_T_grid[(interp_T_grid >= max(np.min(T_sorted), np.min(ref_T))) & (interp_T_grid <= min(np.max(T_sorted), np.max(ref_T)))]
+                    if common_grid.size == 0:
+                        continue
 
-                    ax_diff.plot(ref_T, diff,
+                    wl_interp = np.interp(np.log(common_grid), np.log(T_sorted), wl_sorted)
+                    ref_interp = np.interp(np.log(common_grid), np.log(ref_T), ref_wl)
+                    diff = wl_interp - ref_interp
+
+                    ax_diff.plot(common_grid, diff,
                                 color=color,
                                 linestyle=linestyle,
                                 linewidth=linewidth,
                                 label=legend_name,
                                 zorder=order)
+                    
+                    ax_diff.scatter(common_grid, diff,
+                                color=color,
+                                )
         
         # 2.4.3 add bar chart for contributions at selected return period (OPTIONAL)
         if add_bars:
@@ -374,7 +391,7 @@ if __name__ == "__main__":
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl") #"fl2", opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl_Test2") #"fl2", opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
@@ -382,9 +399,9 @@ if __name__ == "__main__":
     # 1. eerste frequentielijn plot actie met totaal BOI WBI vergelijking, zowel met als zonder modelonzekerheid
     simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2023-totB2023-zon','BI2023-totB2023-met'],
-                        save_dir = save_dir, add_bars = True, select_return_period = 10000)
+                        locations = ['extra_0071_GR'], save_dir = save_dir, add_bars = True, select_return_period = 10000)
 
     # 2. tweede frequentielijn plot actie met detail BOI vergelijking, waarbij we de verschillende BOI simulaties vergelijken met elkaar (dus zonder de WBI2017 referentie)
     simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
-                        save_dir = save_dir)
+                        locations = ['extra_0071_GR'], save_dir = save_dir)
