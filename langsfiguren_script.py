@@ -181,7 +181,7 @@ def plot_langsfiguur(csv_path: str, parameter: str, simulation_types: list):
     # 5. MAP SUBPLOT (unchanged)
     # ========================================================
 
-    line_df = df.sort_values("km", ascending=False)
+    line_df = df[df['X (EPSG:28992)'] > 0].sort_values("km", ascending=False)
 
     x = line_df["X (EPSG:28992)"].values
     y = line_df["Y (EPSG:28992)"].values
@@ -471,7 +471,7 @@ if __name__ == "__main__":
         "BI2023-totB2023-zon",
     ]
 
-    csv_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering\WP02a Beoordelen BOR - Rijntakken\Visualisaties\test_langsfiguren_23-03\HydraNL_BI2023_BOR_Rijn_as_BI2017-totB2017-met_ws.csv"
+    csv_path = r"C:\Users\tolp2\Downloads\HydraNL_BI2023_BOR_Rijn_as_BI2017-totB2017-met_ws.csv"
 
     plot_langsfiguur(
         csv_path=csv_path,
