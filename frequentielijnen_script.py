@@ -402,13 +402,13 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    #sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
     project_fase = 'WP02a Beoordelen Meren'
-    som_versie = 'aslocaties - concept_20260316'
+    som_versie = 'oeverlocaties - concept_20260330'
     watersysteem = 'MRN_Grevelingen' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_MRN_Grevelingen_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    zip_file_name = "HydraNL_BI2023_MRN_Grevelingen_oever.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
-    parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
+    parameter = 'ts' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # locatie van opslaan van figuren    
@@ -420,9 +420,9 @@ if __name__ == "__main__":
     # 1. eerste frequentielijn plot actie met totaal BOI WBI vergelijking, zowel met als zonder modelonzekerheid
     simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2023-totB2023-zon','BI2023-totB2023-met'],
-                        locations = ['extra_0071_GR'], save_dir = save_dir, add_bars = True, select_return_period = 10000)
+                        save_dir = save_dir, add_bars = True, select_return_period = 10000)
 
     # 2. tweede frequentielijn plot actie met detail BOI vergelijking, waarbij we de verschillende BOI simulaties vergelijken met elkaar (dus zonder de WBI2017 referentie)
     simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
-                        locations = ['extra_0071_GR'], save_dir = save_dir)
+                        save_dir = save_dir)

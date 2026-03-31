@@ -10,13 +10,12 @@ from utils.readers import read_hfreq_file, read_hfreq_file_new
 from utils.directories import get_directories, get_parameter_file_paths
 from utils.readers import read_hfreq_file_new
 
-from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict
+from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict, annotate_BOI_higher_lower
 
 def staafdiagram_script(files,
                         save_dir,
                         watersysteem,
                         parameter,
-                        location_type,
                         locations = None,
                         simulation_types = ['2017-totB2017-met_ws', '2023-totB2023-met_ws'],
                         diagram_name = '',
@@ -108,11 +107,18 @@ def staafdiagram_script(files,
 
     plt.figure(figsize=(8, 6))
     plt.bar(categories, counts, color=color, edgecolor='black')
-    plt.ylabel(f'Fractie locaties in {watersysteem}')
+    if len(watersysteem)>0:
+        plt.ylabel(f'Fractie locaties in {watersysteem}')
+    else: 
+        plt.ylabel(f'Fractie locaties')
     plt.xlabel(f'Verschil WBI minus BOI [{diff_unit}]')
     plt.title(f'Verschil in {parameters[parameter][1]} bij T = {TT} jaar \n {simulation_types[0]} - {simulation_types[1]}')
     plt.grid(True, alpha=0.3, axis='y')
-    plt.xticks(rotation=20, ha='center',fontsize=9)
+    # add vertical line at 0
+    x_zero_line = len(categories) / 2 - 0.5
+    plt.axvline(x_zero_line, color='black', linestyle='--', linewidth=2)
+    #annotate_BOI_higher_lower(plt.gca(), x_zero_line, orientation='horizontal')
+    plt.xticks(rotation=30,fontsize=9)
     plt.tight_layout()
     
     # naam maken en directory controlerenen aanmaken indien nodig
@@ -128,10 +134,10 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen Meren'
-    som_versie = 'aslocaties - concept_20260316'
-    watersysteem = 'MRN_IJsselmeer' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_MRN_IJsselmeer_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    project_fase = 'WP02a Beoordelen BOR - Rijntakken'
+    som_versie = 'aslocaties - concept_20260323'
+    watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
+    zip_file_name = "HydraNL_BI2023_BOR_Rijn_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
     parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
@@ -143,10 +149,12 @@ if __name__ == "__main__":
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter)
     files = [f.replace('/', '\\') for f in files] # Toegevoegd door Thomas omdat het pad anders niet werkte bij mij
 
-    diagrams = {'totB2017-zon': ['BI2017-totB2017-zon_ws', 'BI2023-totB2023-zon_ws'], 
-                'totB2017-met': ['BI2017-totB2017-met_ws', 'BI2023-totB2023-met_ws'],
-                #'fysB2017-zon': ['BI2023-fysB2017-zon_ws', 'BI2023-totB2017-zon_ws'],
-                'stkB2017-zon': ['BI2023-stkB2017-zon_ws', 'BI2023-totB2023-zon_ws'],}
+    diagrams = {'totB2017-zon': [f'BI2017-totB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'], 
+                'totB2017-met': [f'BI2017-totB2017-met_{parameter}', f'BI2023-totB2023-met_{parameter}'],
+                'fysB2017-zon': [f'BI2023-fysB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
+                'stkB2017-zon': [f'BI2023-stkB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
+                'rknB2017-zon': [f'BI2023-rknB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}']
+                }
 
     for diagram_name, simulation_types in diagrams.items():
         staafdiagram_script(files,
@@ -154,7 +162,6 @@ if __name__ == "__main__":
                             diagram_name = diagram_name,
                             watersysteem = watersysteem,
                             parameter = parameter,
-                            location_type=["as"],
                             locations = None,
                             simulation_types = simulation_types,
                             TT = 10000)

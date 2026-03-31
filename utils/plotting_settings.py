@@ -57,49 +57,62 @@ order_dict = {
         legend_dict['BI2023-totB2023-met']: 2
     }
 
-def annotate_BOI_higher_lower(ax):
-
+def annotate_BOI_higher_lower(ax, x_zero_line, orientation='vertical'):
+    """
+    Add annotations showing BOI vs WBI comparison.
+    
+    Parameters:
+    -----------
+    ax : matplotlib axis
+        The axis to annotate
+    x_zero_line : float
+        The position of the zero line
+    orientation : str
+        'vertical' (default): arrows above/below, placed right of figure
+        'horizontal': arrows left/right, placed above figure
+    """
+    
     y_min, y_max = ax.get_ylim()
+    x_min, x_max = ax.get_xlim()
 
-    # Blend: x in axes coords, y in data coords
-    trans = mtransforms.blended_transform_factory(
-        ax.transAxes, ax.transData
-    )
+    if orientation == 'vertical':
+        # Blend: x in axes coords, y in data coords
+        trans = mtransforms.blended_transform_factory(
+            ax.transAxes, ax.transData
+        )
+        x_pos = 1.05
 
-    x_pos = 1.05  # clearly outside right spine
+        # Up arrow
+        ax.annotate(
+            '',
+            xy=(x_pos, y_max/2),
+            xytext=(x_pos, 0),
+            xycoords=trans,
+            textcoords=trans,
+            arrowprops=dict(arrowstyle='->', linewidth=1.2),
+            annotation_clip=False
+        )
+        ax.text(x_pos, y_max/2, 'BOI\nhoger', transform=trans, va='bottom', ha='center')
 
-    # Up arrow (0 → y_max)
-    ax.annotate(
-        '',
-        xy=(x_pos, y_max/2),
-        xytext=(x_pos, 0),
-        xycoords=trans,
-        textcoords=trans,
-        arrowprops=dict(arrowstyle='->', linewidth=1.2),
-        annotation_clip=False
-    )
+        # Down arrow
+        ax.annotate(
+            '',
+            xy=(x_pos, y_min/2),
+            xytext=(x_pos, 0),
+            xycoords=trans,
+            textcoords=trans,
+            arrowprops=dict(arrowstyle='->', linewidth=1.2),
+            annotation_clip=False
+        )
+        ax.text(x_pos, y_min/2, 'BOI\nlager', transform=trans, va='top', ha='center')
 
-    ax.text(
-        x_pos, y_max/2,
-        'BOI\nhoger',
-        transform=trans,
-        va='bottom', ha='center'
-    )
+    elif orientation == 'horizontal':
+        # Blend: x in data coords, y in axes coords
+        trans = mtransforms.blended_transform_factory(
+            ax.transData, ax.transAxes
+        )
+        y_pos = 0.90
 
-    # Down arrow (0 → y_min)
-    ax.annotate(
-        '',
-        xy=(x_pos, y_min/2),
-        xytext=(x_pos, 0),
-        xycoords=trans,
-        textcoords=trans,
-        arrowprops=dict(arrowstyle='->', linewidth=1.2),
-        annotation_clip=False
-    )
+        ax.text((x_zero_line + x_max) / 2, y_pos, 'WBI\ngroter', transform=trans, ha='center', va='bottom')
 
-    ax.text(
-        x_pos, y_min/2,
-        'BOI\nlager',
-        transform=trans,
-        va='top', ha='center'
-    )
+        ax.text((x_zero_line + x_min) / 2, y_pos, 'WBI\nkleiner', transform=trans, ha='center', va='bottom')

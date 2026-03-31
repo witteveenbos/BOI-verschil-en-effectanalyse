@@ -41,7 +41,7 @@ def get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersystee
         "hs": "hsfreq.txt",
         "tp": "tpfreq.txt",
         "ts": "tmfreq.txt",
-        "HBN": "ffq.txt"
+        "go": "ffq.txt"
     }
 
     if parameter not in parameter_map:
