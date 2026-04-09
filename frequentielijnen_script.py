@@ -206,8 +206,8 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     wl_interp = np.interp(np.log(select_return_period), np.log(interp_T_grid), wl_on_grid)
                     contributions[computation_name] = wl_interp
 
-            fys_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-fysB2017-zon')
-            stk_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-stkB2017-zon')
+            stk_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-fysB2017-zon')
+            fys_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-stkB2017-zon')
             rkn_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-rknB2017-zon')
             tot_zon_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2017-totB2017-zon')
             tot_met_contr = safe_diff(contributions, 'BI2023-totB2023-met', 'BI2017-totB2017-met')
@@ -221,16 +221,17 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
 
             contributions_dict = {}
 
-            if fys_contr is not None:
-                contributions_dict['BOI fysica'] = {
-                    'value': fys_contr,
-                    'color': colors_dict['BI2023-fysB2017-zon'][0]
-                }
-
             if stk_contr is not None:
-                contributions_dict['BOI statistiek'] = {
+                contributions_dict['BOI fysica'] = {
                     'value': stk_contr,
                     'color': colors_dict['BI2023-stkB2017-zon'][0]
+                }
+
+
+            if fys_contr is not None:
+                contributions_dict['BOI statistiek'] = {
+                    'value': fys_contr,
+                    'color': colors_dict['BI2023-fysB2017-zon'][0]
                 }
 
             if rkn_contr is not None:
@@ -242,13 +243,13 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             if tot_zon_contr is not None:
                 contributions_dict['Totaal zonder'] = {
                     'value': tot_zon_contr,
-                    'color': colors_dict['BI2017-totB2017-zon'][0]
+                    'color': colors_dict['BI2023-totB2023-zon'][0]
                 }
 
             if tot_met_contr is not None:
                 contributions_dict['Totaal met'] = {
                     'value': tot_met_contr,
-                    'color': colors_dict['BI2017-totB2017-met'][0]
+                    'color': colors_dict['BI2023-totB2023-met'][0]
                 }
 
             if riskeer_contr is not None:
@@ -306,9 +307,12 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     
         # 2.4.3 add bar chart for contributions at selected return period (OPTIONAL)
         if add_bars:
-            ax_bar.bar(contributions_dict.keys(), [contributions_dict[key]['value'] for key in contributions_dict.keys()],
-                       color=[contributions_dict[key]['color'] for key in contributions_dict.keys()], 
-                       edgecolor="black", linewidth = 0.8, width = 0.55, zorder = 2)
+            # Filter out zero values
+            filtered_contributions = {k: v for k, v in contributions_dict.items() if v['value'] != 0}
+            
+            ax_bar.bar(filtered_contributions.keys(), [filtered_contributions[key]['value'] for key in filtered_contributions.keys()],
+                       color=[filtered_contributions[key]['color'] for key in filtered_contributions.keys()], 
+                       edgecolor="black", linewidth=0.8, width=0.55, zorder=2)
 
         # 2.4.4 top as formatting
         ax.set_xlabel("Terugkeertijd (jaar)", fontsize=11)
@@ -357,7 +361,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             ax_bar.set_ylabel(rf"Verschil in {ylabel_bar} t.o.v. WBI ({ylabel_bar_unit})", fontsize=11)
             ax_bar.grid(True, axis='y', alpha=0.3, zorder = 0)
 
-            labels = list(contributions_dict.keys())
+            labels = list(filtered_contributions.keys())
             wrapped_labels = [textwrap.fill(label, width=20) for label in labels]
             ax_bar.set_xticklabels(wrapped_labels)
             ax_bar.set_title(f"Individuele bijdrage bij T = {select_return_period} jaar", fontsize=11)
