@@ -139,17 +139,17 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             ylabel_diff = parameters[parameter_name][1]
             ylabel_diff_unit = parameters[parameter_name][4]
 
-            if set(['BI2017-totB2017-met','BI2023-totB2023-met', 'BI2017-totB2017-zon','BI2023-totB2023-zon']) == set(simulation_types) and set(reference_name) == set(['BI2023-totB2023-met', 'BI2023-totB2023-zon']):
-                filename_addition = "totaal-boi"
-                ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI ({ylabel_diff_unit})"
-                diff_simulations = ['BI2017-totB2017-met','BI2023-totB2023-met']
+            if set(['BI2017-totB2017-met','BI2023-totB2023-met', 'BI2017-totB2017-zon','BI2023-totB2023-zon']) == set(simulation_types) and set(reference_name) == set(['BI2017-totB2017-zon','BI2017-totB2017-met']):
+                filename_addition = "totaal-wbi"
+                ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. WBI ({ylabel_diff_unit})"
+                diff_simulations = ['BI2023-totB2023-zon','BI2023-totB2023-met']
             # elif set(['BI2017-totB2017-met','BI2023-totB2023-met', 'BI2017-totB2017-zon','BI2023-totB2023-zon']) == set(simulation_types) and reference_name == 'BI2023-totB2023-zon':
             #     filename_addition = "totaal-boi-zon"
             #     ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI-zon ({ylabel_diff_unit})"
             #     diff_simulations = ['BI2017-totB2017-zon','BI2023-totB2023-zon']
             else:
-                filename_addition = "detail-boi-zon"
-                ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI ({ylabel_diff_unit})"
+                filename_addition = "detail-wbi-zon"
+                ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. WBI ({ylabel_diff_unit})"
                 diff_simulations = simulation_types
 
         else:
@@ -206,11 +206,11 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                     wl_interp = np.interp(np.log(select_return_period), np.log(interp_T_grid), wl_on_grid)
                     contributions[computation_name] = wl_interp
 
-            fys_contr = safe_diff(contributions, 'BI2023-fysB2017-zon', 'BI2023-totB2023-zon')
-            stk_contr = safe_diff(contributions, 'BI2023-stkB2017-zon', 'BI2023-totB2023-zon')
-            rkn_contr = safe_diff(contributions, 'BI2023-rknB2017-zon', 'BI2023-totB2023-zon')
-            tot_zon_contr = safe_diff(contributions, 'BI2017-totB2017-zon', 'BI2023-totB2023-zon')
-            tot_met_contr = safe_diff(contributions, 'BI2017-totB2017-met', 'BI2023-totB2023-met')
+            fys_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-fysB2017-zon')
+            stk_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-stkB2017-zon')
+            rkn_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2023-rknB2017-zon')
+            tot_zon_contr = safe_diff(contributions, 'BI2023-totB2023-zon', 'BI2017-totB2017-zon')
+            tot_met_contr = safe_diff(contributions, 'BI2023-totB2023-met', 'BI2017-totB2017-met')
 
             # Riskeer set to none
             riskeer_contr = None
@@ -222,19 +222,19 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             contributions_dict = {}
 
             if fys_contr is not None:
-                contributions_dict['WBI fysica'] = {
+                contributions_dict['BOI fysica'] = {
                     'value': fys_contr,
                     'color': colors_dict['BI2023-fysB2017-zon'][0]
                 }
 
             if stk_contr is not None:
-                contributions_dict['WBI statistiek'] = {
+                contributions_dict['BOI statistiek'] = {
                     'value': stk_contr,
                     'color': colors_dict['BI2023-stkB2017-zon'][0]
                 }
 
             if rkn_contr is not None:
-                contributions_dict['WBI rekeninstellingen'] = {
+                contributions_dict['BOI rekeninstellingen'] = {
                     'value': rkn_contr,
                     'color': colors_dict['BI2023-rknB2017-zon'][0]
                 }
@@ -350,11 +350,11 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             # Annotate BOI higher/lower
             # annotate_BOI_higher_lower(ax_diff) - staat nu uit
             ax_diff.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
-        
+            
         # 2.4.7 bar chart formatting
         if add_bars:
             ax_bar.axhline(0.0, color='black', linewidth=1.5, zorder=0)
-            ax_bar.set_ylabel(rf"Verschil in {ylabel_bar} t.o.v. BOI ({ylabel_bar_unit})", fontsize=11)
+            ax_bar.set_ylabel(rf"Verschil in {ylabel_bar} t.o.v. WBI ({ylabel_bar_unit})", fontsize=11)
             ax_bar.grid(True, axis='y', alpha=0.3, zorder = 0)
 
             labels = list(contributions_dict.keys())
@@ -403,26 +403,26 @@ if __name__ == "__main__":
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
     #sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen Meren'
-    som_versie = 'oeverlocaties - concept_20260330'
-    watersysteem = 'MRN_Grevelingen' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_MRN_Grevelingen_oever.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    project_fase = 'WP02a Beoordelen VIJD'
+    som_versie = 'aslocaties - concept_20260318'
+    watersysteem = 'YVD_IJsseldelta' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
+    zip_file_name = "HydraNL_BI2023_YVD_IJsseldelta_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
-    parameter = 'ts' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
+    parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl") #"fl2", opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl_wbi") #"fl2", opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
 
     # 1. eerste frequentielijn plot actie met totaal BOI WBI vergelijking, zowel met als zonder modelonzekerheid
     simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
-    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2023-totB2023-zon','BI2023-totB2023-met'],
-                        save_dir = save_dir, add_bars = True, select_return_period = 10000)
+    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2017-totB2017-zon','BI2017-totB2017-met'],
+                        save_dir = save_dir, add_bars = True, select_return_period = 10000, locations = ['as_0001_IJ_km0956'])
 
     # 2. tweede frequentielijn plot actie met detail BOI vergelijking, waarbij we de verschillende BOI simulaties vergelijken met elkaar (dus zonder de WBI2017 referentie)
-    simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
-    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
-                        save_dir = save_dir)
+    simulation_types = ['BI2017-totB2017-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
+    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2017-totB2017-zon',
+                        save_dir = save_dir, locations = ['as_0001_IJ_km0956'])

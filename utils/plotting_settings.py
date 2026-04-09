@@ -47,11 +47,11 @@ ylabel_dict = {
 }
 
 order_dict = {
-        legend_dict['BI2017-totB2017-zon']: 1, 
-        legend_dict['BI2023-fysB2017-zon']: 4, 
-        legend_dict['BI2023-stkB2017-zon']: 5, 
+        legend_dict['BI2017-totB2017-zon']: 5, 
+        legend_dict['BI2023-fysB2017-zon']: 3, 
+        legend_dict['BI2023-stkB2017-zon']: 4, 
         legend_dict['BI2023-rknB2017-zon']: 6, 
-        legend_dict['BI2023-totB2023-zon']: 3, 
+        legend_dict['BI2023-totB2023-zon']: 1, 
         legend_dict['BI2017-totB2017-met']: 0, 
         legend_dict['BI2023-onzB2017-met']: 7, 
         legend_dict['BI2023-totB2023-met']: 2
