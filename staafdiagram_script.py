@@ -134,10 +134,10 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen BOR - Rijntakken'
-    som_versie = 'aslocaties - concept_20260323'
+    project_fase = 'WP02a Beoordelen Kust (dijken)'
+    som_versie = 'aslocaties - concept_20260320'
     watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_BOR_Rijn_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    zip_file_name = "HydraNL_BI2023_KST_Dijken_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
     parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
@@ -150,10 +150,10 @@ if __name__ == "__main__":
     files = [f.replace('/', '\\') for f in files] # Toegevoegd door Thomas omdat het pad anders niet werkte bij mij
 
     diagrams = {'totB2017-zon': [f'BI2017-totB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'], 
-                'totB2017-met': [f'BI2017-totB2017-met_{parameter}', f'BI2023-totB2023-met_{parameter}'],
-                'fysB2017-zon': [f'BI2023-fysB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
-                'stkB2017-zon': [f'BI2023-stkB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
-                'rknB2017-zon': [f'BI2023-rknB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}']
+                #'totB2017-met': [f'BI2017-totB2017-met_{parameter}', f'BI2023-totB2023-met_{parameter}'],
+                #'fysB2017-zon': [f'BI2023-fysB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
+                #'stkB2017-zon': [f'BI2023-stkB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
+                #'rknB2017-zon': [f'BI2023-rknB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}']
                 }
 
     for diagram_name, simulation_types in diagrams.items():
