@@ -149,7 +149,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             #     diff_simulations = ['BI2017-totB2017-zon','BI2023-totB2023-zon']
             else:
                 filename_addition = "detail-zon"
-                ylabel_plot_diff = rf"Verschil in {ylabel_diff} ({ylabel_diff_unit})"
+                ylabel_plot_diff = rf'Verschil in {ylabel_diff} ({ylabel_diff_unit})'+'\nBOI totaal - BOI met WBI fysica / statistiek'
                 diff_simulations = simulation_types
 
         else:
