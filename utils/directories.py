@@ -28,7 +28,7 @@ def get_directories(company_name):
     
     return directory_path, save_dir
 
-def get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersysteem, zip_file_name, parameter):
+def get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersysteem, zip_file_name, parameter, riskeer=False):
     """
     Returns a list of full paths (zip_path + internal path)
     to the requested parameter files inside zip archives.
@@ -43,6 +43,14 @@ def get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersystee
         "ts": "tmfreq.txt",
         "go": "ffq.txt"
     }
+    if riskeer:
+        parameter_map = {
+            "ws": "designTable_WS.txt",
+            "hs": "designTable_Hs.txt",
+            "tp": "designTable_Tp.txt",
+            "ts": "designTable_Tm01.txt",
+            "go": "designTable_HBN.txt"
+        }
 
     if parameter not in parameter_map:
         raise ValueError(f"Unknown parameter: {parameter}")
@@ -50,14 +58,19 @@ def get_parameter_file_paths(sp_base_path, project_fase, som_versie, watersystee
     target_filename = parameter_map[parameter]
 
     # Construct folder path to 'sommen'
-    sommen_path = os.path.join(
+    uitvoer_path = os.path.join(
         sp_base_path,
         project_fase,
         "Rekenplan",
         som_versie,
         watersysteem,
         "uitvoer",
-        "sommen"
+    )
+
+    sommen_path = (
+        os.path.join(uitvoer_path, "sommen")
+        if os.path.isdir(os.path.join(uitvoer_path, "sommen"))
+        else uitvoer_path
     )
 
     found_files = []

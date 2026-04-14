@@ -69,3 +69,44 @@ def read_hfreq_file_new(filepath):
         print(f"Error reading {filepath}: {e}")
 
     return None, None
+
+def read_design_table(filepath):
+    """
+    Read design table file (supports files inside zip archives).
+
+    Args:
+        filepath (str): Full path including zip + internal path
+
+    Returns:
+        tuple: (x array, y array) or (None, None)
+    """
+    try:
+        # ZIP support (zelfde logica als jouw functie)
+        if ".zip" in filepath.lower():
+            zip_index = filepath.lower().find(".zip")
+            zip_path = filepath[:zip_index + 4]
+            internal_path = filepath[zip_index + 5:].replace("\\", "/")
+
+            with zipfile.ZipFile(zip_path, 'r') as z:
+                with z.open(internal_path) as f:
+                    text = io.TextIOWrapper(f)
+                    data = np.loadtxt(text, skiprows=1)
+
+        else:
+            data = np.loadtxt(filepath, skiprows=1)
+
+        # Zorg dat het altijd 2D is
+        if data.ndim == 1:
+            data = data.reshape(1, -1)
+
+        # Check of kolommen bestaan
+        if data.shape[1] > max(0, 2):
+            water_level = data[:, 0]
+            failure_prob = data[:, 1]
+            return_period = data[:, 2]
+            return return_period, water_level
+
+    except Exception as e:
+        print(f"Error reading {filepath}: {e}")
+
+    return None, None  

@@ -15,7 +15,7 @@ from collections import defaultdict
 from pathlib import PurePosixPath
 import textwrap
 
-from utils.readers import read_hfreq_file_new
+from utils.readers import read_hfreq_file_new, read_design_table
 from utils.directories import get_parameter_file_paths
 
 from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict, annotate_BOI_higher_lower
@@ -61,7 +61,7 @@ def add_interpolated_return_period_point(return_period, values, target_return_pe
 
     return T_with_target, values_with_target
 
-def main_frequentielijn(files, watersysteem = None, simulation_types = None, reference_name = 'BI2023-totB2023-met', locations = None, colors_dict = colors_dict, save_dir = None, add_bars = False, select_return_period = 10000):
+def main_frequentielijn(files, watersysteem = None, simulation_types = None, reference_name = 'BI2023-totB2023-met', locations = None, colors_dict = colors_dict, save_dir = None, add_bars = False, select_return_period = 10000, add_riskeer = False, files_riskeer = None):
     """
     Main function to read and plot hfreq data.
     
@@ -109,9 +109,31 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             print("ADDING:", location, simulation_type)
             data_by_location[location][simulation_type] = read_hfreq_file_new(file)
         # All data we want to plot has been collected, now we move on to plotting.
+    
+    if add_riskeer:
+        data_by_location_riskeer = defaultdict(dict)
+        for file in files_riskeer:
+            zip_index = file.lower().find(".zip")
+            internal_path = file[zip_index + 5:]
+
+            p = PurePosixPath(internal_path)
+
+            simulation_folder = p.parts[1]
+
+            location = simulation_folder.split("_BI")[0]
+            simulation_type = "BI" + simulation_folder.split("_BI")[1]
+
+            # Remove parameter suffix (_ws, _hs, etc.)
+            sim_type_base = simulation_type[:-3]
+
+            if (locations is None or location in locations):
+                print("ADDING Riskeer:", location, simulation_type)
+                simulation_type = sim_type_base + "-riskeer" + simulation_type[-3:]
+                data_by_location_riskeer[location][simulation_type] = read_design_table(file)
 
     ## 2. Create separate plot for each location
     for location, computations in sorted(data_by_location.items()):
+        
 
         has_reference = bool(reference_name)
         parameter_name = list(computations.keys())[0].split('_')[-1]
@@ -192,13 +214,20 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
 
         ## 2.3 Prepare contributions for bar chart (OPTIONAL)
         if add_bars:
+            if add_riskeer:
+                computations_riskeer = data_by_location_riskeer.get(location, {})
+                computations.update(computations_riskeer)
+            
             contributions = {}
 
             # Calculate water level at desired return period
             for computation_name, (frequency, water_level) in computations.items():
                 computation_name = computation_name.split('_')[0]
-                if computation_name in ['BI2023-fysB2017-zon', 'BI2023-stkB2017-zon', 'BI2023-rknB2017-zon', 'BI2017-totB2017-zon', 'BI2017-totB2017-met', 'BI2023-totB2023-zon', 'BI2023-totB2023-met']:
-                    T = 1.0 / frequency
+                if computation_name in ['BI2023-fysB2017-zon', 'BI2023-stkB2017-zon', 'BI2023-rknB2017-zon', 'BI2017-totB2017-zon', 'BI2017-totB2017-met', 'BI2023-totB2023-zon', 'BI2023-totB2023-met', 'BI2017-totB2017-met-riskeer', 'BI2023-totB2023-met-riskeer']:
+                    if 'riskeer' not in computation_name: # riskeer data staat al als return period
+                        T = 1.0 / frequency
+                    else:
+                        T = frequency
                     sort_idx = np.argsort(T)
                     T_sorted = T[sort_idx]
                     wl_sorted = water_level[sort_idx]
@@ -213,7 +242,7 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
             tot_met_contr = safe_diff(contributions, 'BI2023-totB2023-met', 'BI2017-totB2017-met')
 
             # Riskeer set to none
-            riskeer_contr = None
+            riskeer_contr = safe_diff(contributions, 'BI2023-totB2023-met-riskeer', 'BI2017-totB2017-met-riskeer') if add_riskeer else None
 
             # --------------------------------------------------
             # Build dictionary only with available contributions
@@ -266,6 +295,8 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
 
         ## 2.4 Plotting routine loop over all computations for this location
         for computation_name, (frequency, water_level) in sorted(computations.items()):
+            if 'riskeer' in computation_name:
+                continue
             color, linewidth, linestyle = colors_dict.get(computation_name.split('_')[0])
             legend_name = legend_dict[computation_name.split('_')[0]]
             order = order_dict[legend_dict[computation_name.split('_')[0]]]
@@ -410,27 +441,33 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    #sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    # sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
     project_fase = 'WP02a Beoordelen BOR - Rijntakken'
     som_versie = 'oeverlocaties - concept_20260323'
     watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
     zip_file_name = "HydraNL_BI2023_BOR_Rijn_oever.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
-    parameter = 'go' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
-    locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
+    parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
+    locations = None # None = alle locaties, maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
+
+    # Riskeer
+    add_riskeer = True  # riskeer bar toevoegen
+    som_versie_riskeer = "oeverlocaties - concept_20260407" # versie van de som waarin de riskeer berekeningen staan
+    zip_file_name_riskeer = "HydraRing_BI2023_BOR_Rijn_oever.zip" # naam van het zip bestand waarin de riskeer data staat
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl") #"fl2", opslaan in een submap van de map 
+    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl_testRiskeer") #"fl2", opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
     files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
+    files_riskeer = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie_riskeer, watersysteem = watersysteem, zip_file_name = zip_file_name_riskeer, parameter = parameter, riskeer = True) if add_riskeer else []
 
     # 1. eerste frequentielijn plot actie met totaal BOI WBI vergelijking, zowel met als zonder modelonzekerheid
     simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2017-totB2017-zon','BI2017-totB2017-met'],
-                        save_dir = save_dir, add_bars = True, select_return_period = 10000)
+                        locations = locations, save_dir = save_dir, add_bars = True, select_return_period = 10000, add_riskeer = add_riskeer, files_riskeer = files_riskeer)
 
     # 2. tweede frequentielijn plot actie met detail BOI vergelijking, waarbij we de verschillende BOI simulaties vergelijken met elkaar (dus zonder de WBI2017 referentie)
     simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
     main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
-                        save_dir = save_dir)
+                        locations = locations, save_dir = save_dir)
