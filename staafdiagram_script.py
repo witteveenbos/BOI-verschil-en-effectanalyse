@@ -61,7 +61,7 @@ def staafdiagram_script(files,
     for key, value in data_by_location.items():
         keys_lst = list(value.keys())
         if len(keys_lst) == len(simulation_types):
-            diff = value[keys_lst[0]] - value[keys_lst[1]]
+            diff = value[keys_lst[1]] - value[keys_lst[0]]
             diff_lst.append(diff)
 
     # Categorize into bins
@@ -106,13 +106,18 @@ def staafdiagram_script(files,
     color = colors_dict[color_key][0] if color_key else 'gray'
 
     plt.figure(figsize=(8, 6))
-    plt.bar(categories, counts, color=color, edgecolor='black')
+    if 'fys' in diagram_name or 'stk' in diagram_name or 'rkn' in diagram_name:
+        plt.bar(categories, counts, color=color, edgecolor='black', linewidth = 0.8, width = 0.55, zorder = 2, 
+                        hatch = '//' , hatch_linewidth = 0.2)
+    else:
+        plt.bar(categories, counts, color=color, edgecolor='black', linewidth = 0.8, width = 0.55, zorder = 2)
+
     if len(watersysteem)>0:
         plt.ylabel(f'Fractie locaties in {watersysteem}')
     else: 
         plt.ylabel(f'Fractie locaties')
-    plt.xlabel(f'Verschil WBI minus BOI [{diff_unit}]')
-    plt.title(f'Verschil in {parameters[parameter][1]} bij T = {TT} jaar \n {simulation_types[0]} - {simulation_types[1]}')
+    plt.xlabel(f'Verschil in {parameters[parameter][1]} bij T = {TT} jaar [{diff_unit}]')
+    plt.title(f'{simulation_types[1]} - {simulation_types[0]}')
     plt.grid(True, alpha=0.3, axis='y')
     # add vertical line at 0
     x_zero_line = len(categories) / 2 - 0.5
@@ -134,10 +139,10 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen Kust (dijken)'
-    som_versie = 'aslocaties - concept_20260320'
+    project_fase = 'WP02a Beoordelen BOR - Rijntakken'
+    som_versie = 'aslocaties - concept_20260331'
     watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_KST_Dijken_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    zip_file_name = "HydraNL_BI2023_BOR_Rijn_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
     parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
@@ -150,10 +155,10 @@ if __name__ == "__main__":
     files = [f.replace('/', '\\') for f in files] # Toegevoegd door Thomas omdat het pad anders niet werkte bij mij
 
     diagrams = {'totB2017-zon': [f'BI2017-totB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'], 
-                #'totB2017-met': [f'BI2017-totB2017-met_{parameter}', f'BI2023-totB2023-met_{parameter}'],
-                #'fysB2017-zon': [f'BI2023-fysB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
-                #'stkB2017-zon': [f'BI2023-stkB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
-                #'rknB2017-zon': [f'BI2023-rknB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}']
+                'totB2017-met': [f'BI2017-totB2017-met_{parameter}', f'BI2023-totB2023-met_{parameter}'],
+                'fysB2017-zon': [f'BI2023-fysB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
+                'stkB2017-zon': [f'BI2023-stkB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}'],
+                'rknB2017-zon': [f'BI2023-rknB2017-zon_{parameter}', f'BI2023-totB2023-zon_{parameter}']
                 }
 
     for diagram_name, simulation_types in diagrams.items():
