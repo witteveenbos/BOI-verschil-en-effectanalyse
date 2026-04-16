@@ -31,10 +31,10 @@ def get_group(name):
         return "zon"
     return None
 
-def find_serie(pattern, series_list):
+def find_serie(pattern, series_list: list[str], hydra_versie = "HydraNL"):
     """Find serie name matching pattern"""
     for serie in series_list:
-        if pattern in serie:
+        if serie.startswith(hydra_versie) and pattern in serie:
             return serie
     return None
 
@@ -51,13 +51,19 @@ def compute_diff(sim_a, sim_b, df, parameter_column, simulation_types):
 # Main function
 # ============================================================
 
-def plot_langsfiguur(csv_path: str, parameter: str, simulation_types: list, return_period=None):
+def plot_langsfiguur(csv_path: str, parameter: str, simulation_types: list, return_period=None, filter: None | list[str] =None):
 
+    # When not filtered for specific stretch, the figure is unreadable
+    if not filter:
+        return
+    
     # --------------------------------------------------------
     # 1. Read CSV
     # --------------------------------------------------------
     df = pd.read_csv(csv_path, sep=r"\s*,\s*", engine="python")
     df.columns = df.columns.str.strip()
+    
+    df = df[df["Locatie (-)"].str.contains('|'.join(filter), na=False)]
 
     df["km"] = (
         df["Locatie (-)"]
@@ -150,8 +156,7 @@ def plot_langsfiguur(csv_path: str, parameter: str, simulation_types: list, retu
         merged = df_2017.merge(df_2023, on="km", suffixes=("_2017", "_2023"))
 
         merged["diff"] = (
-            merged[f"{parameter_column}_2017"]
-            - merged[f"{parameter_column}_2023"]
+            merged[f"{parameter_column}_2023"] - merged[f"{parameter_column}_2017"]
         )
 
         color, linewidth, linestyle = colors_dict[f"BI2017-totB2017-{group}"]
@@ -250,7 +255,7 @@ def plot_langsfiguur(csv_path: str, parameter: str, simulation_types: list, retu
 
     return df
 
-def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: list):
+def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: list, riviertak = "", rp = "", filter=None):
     """
     Violin plot of longitudinal contributions
     Categories aligned with frequentielijnen script
@@ -261,10 +266,8 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
 
     df["km"] = (
         df["Locatie (-)"]
-        .str.extract(r"km(\d+)", expand=False)
-        .astype(float)
+        .str.extract(r"(.{2}_km\d+)", expand=False)
     )
-
     df = df.sort_values("km", ascending=False)
 
     parameter_column = parameters[parameter][0]
@@ -272,6 +275,8 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
     ylabel_diff_unit = parameters[parameter][4]
 
     df = df[df["Serie"].str.contains('|'.join(simulation_types), na=False)]
+    if filter:
+        df = df[df["Locatie (-)"].str.contains('|'.join(filter), na=False)]
 
     # --------------------------------------------------------
     # Compute longitudinal differences per km
@@ -282,64 +287,72 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
     # WBI contributions - match serie names first
     series_list = df["Serie"].unique()
         
-    contributions["WBI fysica"] = compute_diff(
+    contributions["Fysica"] = compute_diff(
+        find_serie("BI2023-totB2023-zon", series_list),
         find_serie("BI2023-fysB2017-zon", series_list),
-        find_serie("BI2023-totB2023-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
-    contributions["WBI statistiek"] = compute_diff(
+    contributions["Statistiek"] = compute_diff(
+        find_serie("BI2023-totB2023-zon", series_list),
         find_serie("BI2023-stkB2017-zon", series_list),
-        find_serie("BI2023-totB2023-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
-    contributions["WBI rekeninstellingen"] = compute_diff(
-        find_serie("BI2023-rknB2017-zon", series_list),
+    contributions["Rekeninstellingen"] = compute_diff(
         find_serie("BI2023-totB2023-zon", series_list),
+        find_serie("BI2023-rknB2017-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
     contributions["Totaal zonder"] = compute_diff(
-        find_serie("BI2017-totB2017-zon", series_list),
         find_serie("BI2023-totB2023-zon", series_list),
+        find_serie("BI2017-totB2017-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
     contributions["Totaal met"] = compute_diff(
-        find_serie("BI2017-totB2017-met", series_list),
         find_serie("BI2023-totB2023-met", series_list),
+        find_serie("BI2017-totB2017-met", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
-    # Riskeer (temporary assumption)
-    tot_met = contributions["Totaal met"]
-    if tot_met is not None:
-        contributions["Riskeer"] = tot_met + 0.05
-    else:
-        contributions["Riskeer"] = None
+    contributions["Hydra-Ring"]  = compute_diff(
+        find_serie("BI2023-totB2023-met", series_list, "HydraRing"),
+        find_serie("BI2017-totB2017-met", series_list, "HydraRing"),
+        df,
+        parameter_column,
+        simulation_types
+    )
+
+    # # Riskeer (temporary assumption)
+    # tot_met = contributions["Totaal met"]
+    # if tot_met is not None:
+    #     contributions["Hydra-Ring"] = tot_met + 0.05
+    # else:
+    #     contributions["Hydra-Ring"] = None
 
     # --------------------------------------------------------
     # Fixed category order (ALWAYS 6)
     # --------------------------------------------------------
 
     categories = [
-        "WBI fysica",
-        "WBI statistiek",
-        "WBI rekeninstellingen",
+        "Fysica",
+        "Statistiek",
+        "Rekeninstellingen",
         "Totaal zonder",
         "Totaal met",
-        "Riskeer",
+        "Hydra-Ring",
     ]
 
     data = []
@@ -354,18 +367,18 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
         else:
             data.append(values.values)
             # get color from corresponding simulation
-            if cat == "WBI fysica":
+            if cat == "Fysica":
                 colors.append(colors_dict["BI2023-fysB2017-zon"][0])
-            elif cat == "WBI statistiek":
+            elif cat == "Statistiek":
                 colors.append(colors_dict["BI2023-stkB2017-zon"][0])
-            elif cat == "WBI rekeninstellingen":
+            elif cat == "Rekeninstellingen":
                 colors.append(colors_dict["BI2023-rknB2017-zon"][0])
             elif cat == "Totaal zonder":
                 colors.append(colors_dict["BI2017-totB2017-zon"][0])
             elif cat == "Totaal met":
                 colors.append(colors_dict["BI2017-totB2017-met"][0])
-            elif cat == "Riskeer":
-                colors.append("purple")
+            elif cat == "Hydra-Ring":
+                colors.append("gray")
 
     # --------------------------------------------------------
     # Plot
@@ -394,17 +407,17 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
         valid_data.append(values)
         valid_positions.append(i)
 
-        if cat == "WBI fysica":
+        if cat == "Fysica":
             valid_colors.append(colors_dict["BI2023-fysB2017-zon"][0])
-        elif cat == "WBI statistiek":
+        elif cat == "Statistiek":
             valid_colors.append(colors_dict["BI2023-stkB2017-zon"][0])
-        elif cat == "WBI rekeninstellingen":
+        elif cat == "Rekeninstellingen":
             valid_colors.append(colors_dict["BI2023-rknB2017-zon"][0])
         elif cat == "Totaal zonder":
             valid_colors.append(colors_dict["BI2017-totB2017-zon"][0])
         elif cat == "Totaal met":
             valid_colors.append(colors_dict["BI2017-totB2017-met"][0])
-        elif cat == "Riskeer":
+        elif cat == "Hydra-Ring":
             valid_colors.append("gray")
     legend_handles = []
 
@@ -415,7 +428,7 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
             valid_data,
             positions=valid_positions,
             showmeans=True,
-            showmedians=True,
+            showmedians=False,
             showextrema=True
         )
 
@@ -438,8 +451,9 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
     ax.set_ylabel(
         rf"Verschil in {ylabel_diff} ({ylabel_diff_unit})"
     )
+    ax.set_ylim(-0.5, 0.5)  # fixed y-limits for better comparison, adjust as needed
 
-    ax.set_title("Verdeling bijdrage langs traject")
+    ax.set_title(f"Verdeling bijdrage langs traject - {riviertak} - terugkeertijd {rp} jaar")
 
     ax.grid(True, axis="y", alpha=0.3)
 
@@ -476,13 +490,18 @@ if __name__ == "__main__":
     ]
 
     for rp in [100, 1000 , 10000, 100000]:
-        csv_path = f"C:\\Users\\tolp2\\Downloads\\HydraNL_BI2023_BOR_Rijn_as_BI2017-totB2017-met_ws-{rp}.csv"
+        csv_path = f"C:\\Users\\tolp2\\Downloads\\langsfiguren\\totaal\\HydraNL_BI2023_BOR_Rijn_as_BI2017-totB2017-met_ws-{rp}.csv"
+        # filter = ["RH", "BR", "PK", "IJ"]  # IJssel
+        # filter = ["RH", "BR", "PK", "NR", "LE"] # Nederrijn/Lek
+        filter = ["RH", "BR", "WA"] # Waal
+        # csv_path = f"C:\\Users\\tolp2\\Downloads\\langsfiguren\\Verschil (BI2017-totB2017-zon_ws - BI2023-totB2023-zon_ws) - {rp}.csv"
 
         plot_langsfiguur(
             csv_path=csv_path,
             parameter=parameter,
             simulation_types=simulation_types,
-            return_period=rp
+            return_period=rp,
+            filter=filter
         )
 
         simulation_types = [
@@ -499,4 +518,7 @@ if __name__ == "__main__":
             csv_path=csv_path,
             parameter=parameter,
             simulation_types=simulation_types,
+            riviertak = "Nederrijn/Lek",
+            rp = str(rp),
+            filter=filter
         )
