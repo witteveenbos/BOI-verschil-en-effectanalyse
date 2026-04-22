@@ -278,41 +278,41 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
     # WBI contributions - match serie names first
     series_list = df["Serie"].unique()
         
-    contributions["WBI fysica"] = compute_diff(
+    contributions["Fysica"] = compute_diff(
+        find_serie("BI2023-totB2023-zon", series_list),
         find_serie("BI2023-fysB2017-zon", series_list),
-        find_serie("BI2023-totB2023-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
-    contributions["WBI statistiek"] = compute_diff(
+    contributions["Statistiek"] = compute_diff(
+        find_serie("BI2023-totB2023-zon", series_list),
         find_serie("BI2023-stkB2017-zon", series_list),
-        find_serie("BI2023-totB2023-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
-    contributions["WBI rekeninstellingen"] = compute_diff(
-        find_serie("BI2023-rknB2017-zon", series_list),
+    contributions["Rekeninstellingen"] = compute_diff(
         find_serie("BI2023-totB2023-zon", series_list),
+        find_serie("BI2023-rknB2017-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
     contributions["Totaal zonder"] = compute_diff(
-        find_serie("BI2017-totB2017-zon", series_list),
         find_serie("BI2023-totB2023-zon", series_list),
+        find_serie("BI2017-totB2017-zon", series_list),
         df,
         parameter_column,
         simulation_types
     )
 
     contributions["Totaal met"] = compute_diff(
-        find_serie("BI2017-totB2017-met", series_list),
         find_serie("BI2023-totB2023-met", series_list),
+        find_serie("BI2017-totB2017-met", series_list),
         df,
         parameter_column,
         simulation_types
@@ -330,12 +330,12 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
     # --------------------------------------------------------
 
     categories = [
-        "WBI fysica",
-        "WBI statistiek",
-        "WBI rekeninstellingen",
+        "Fysica",
+        "Statistiek",
+        "Rekeninstellingen",
         "Totaal zonder",
         "Totaal met",
-        "Riskeer",
+        #"Riskeer",
     ]
 
     data = []
@@ -350,11 +350,11 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
         else:
             data.append(values.values)
             # get color from corresponding simulation
-            if cat == "WBI fysica":
+            if cat == "Fysica":
                 colors.append(colors_dict["BI2023-fysB2017-zon"][0])
-            elif cat == "WBI statistiek":
+            elif cat == "Statistiek":
                 colors.append(colors_dict["BI2023-stkB2017-zon"][0])
-            elif cat == "WBI rekeninstellingen":
+            elif cat == "Rekeninstellingen":
                 colors.append(colors_dict["BI2023-rknB2017-zon"][0])
             elif cat == "Totaal zonder":
                 colors.append(colors_dict["BI2017-totB2017-zon"][0])
@@ -390,11 +390,11 @@ def plot_langsfiguur_violin(csv_path: str, parameter: str, simulation_types: lis
         valid_data.append(values)
         valid_positions.append(i)
 
-        if cat == "WBI fysica":
+        if cat == "Fysica":
             valid_colors.append(colors_dict["BI2023-fysB2017-zon"][0])
-        elif cat == "WBI statistiek":
+        elif cat == "Statistiek":
             valid_colors.append(colors_dict["BI2023-stkB2017-zon"][0])
-        elif cat == "WBI rekeninstellingen":
+        elif cat == "Rekeninstellingen":
             valid_colors.append(colors_dict["BI2023-rknB2017-zon"][0])
         elif cat == "Totaal zonder":
             valid_colors.append(colors_dict["BI2017-totB2017-zon"][0])
@@ -467,11 +467,14 @@ if __name__ == "__main__":
     simulation_types = [
         "BI2017-totB2017-met",
         "BI2023-totB2023-met",
+        "BI2023-fysB2017-zon",
+        "BI2023-rknB2017-zon",
+        "BI2023-stkB2017-zon",
         "BI2017-totB2017-zon",
         "BI2023-totB2023-zon",
     ]
 
-    csv_path = r"C:\Users\tolp2\Downloads\HydraNL_BI2023_BOR_Rijn_as_BI2017-totB2017-met_ws.csv"
+    csv_path = r"c:\Users\BEMC\OneDrive - Witteveen+Bos\Documenten\Projects\xx hydraulische belastingen\IJVD\HydraNL_BI2023_YVD_Vechtdelta_as_BI2017-totB2017-met_ws_ZW_GD.csv"
 
     plot_langsfiguur(
         csv_path=csv_path,

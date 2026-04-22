@@ -87,18 +87,18 @@ def staafdiagram_script(files,
     # Create bar plot
     # categories = [f'BOI {int(up*100)}cm hoger dan WBI', r'$$' , f'BOI {int(up*100)}cm lager dan WBI']
     categories = [
-    f'< -{int(up*100)}cm',
-    '-50 tot -40cm',
-    '-40 tot -30cm',
-    '-30 tot -20cm',
-    '-20 tot -10cm',
-    '-10 tot 0cm',
-    '0 tot 10cm',
-    '10 tot 20cm',
-    '20 tot 30cm',
-    '30 tot 40cm',
-    '40 tot 50cm',
-    f'> {int(abs(lo)*100)}cm']
+    f'< -{up:.2f} m'.replace('.', ','),
+    '-0,50 tot -0,40 m',
+    '-0,40 tot -0,30 m',
+    '-0,30 tot -0,20 m',
+    '-0,20 tot -0,10 m',
+    '-0,10 tot 0 m',
+    '0 tot 0,10 m',
+    '0,10 tot 0,20 m',
+    '0,20 tot 0,30 m',
+    '0,30 tot 0,40 m',
+    '0,40 tot 0,50 m',
+    f'> {lo:.2f} m'.replace('.', ',')]
     counts = [lager, bin_n50_n40, bin_n40_n30, bin_n30_n20, bin_n20_n10, bin_n10_00, bin_00_10, bin_10_20, bin_20_30, bin_30_40, bin_40_50, hoger]
 
     # get color from colors_dict based on simulation_types
@@ -127,7 +127,10 @@ def staafdiagram_script(files,
     plt.tight_layout()
     
     # naam maken en directory controlerenen aanmaken indien nodig
-    filename = f"Staafdiagram_{watersysteem}_{parameter}_{diagram_name}.png"
+    if watersysteem:
+        filename = f"Staafdiagram_T{TT}_{watersysteem}_{parameter}_{diagram_name}.png"
+    else:
+        filename = f"Staafdiagram_T{TT}_{parameter}_{diagram_name}.png"
     os.makedirs(save_dir, exist_ok=True)
 
     plt.savefig(os.path.join(save_dir, filename), dpi=150, bbox_inches='tight')
@@ -139,10 +142,10 @@ if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
     sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen BOR - Rijntakken'
-    som_versie = 'aslocaties - concept_20260331'
-    watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_BOR_Rijn_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    project_fase = 'WP02a Beoordelen VIJD'
+    som_versie = 'aslocaties - concept_20260318'
+    watersysteem = 'YVD_Vechtdelta' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
+    zip_file_name = "HydraNL_BI2023_YVD_Vechtdelta_as.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
     parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
     locations = None # maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
