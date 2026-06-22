@@ -18,7 +18,7 @@ import textwrap
 from utils.readers import read_hfreq_file_new, read_design_table
 from utils.directories import get_parameter_file_paths
 
-from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict, annotate_BOI_higher_lower
+from utils.plotting_settings import colors_dict, legend_dict, parameters, order_dict, ylabel_dict, annotate_BOI_higher_lower
 
 def get_group(name):
     if 'met' in name:
@@ -78,7 +78,6 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
                                 If none is given, all locations are included
         colors_dict (dict) : Maps simulation_type to a plotting color.
                                 If none is given, a standard template is used which is read from utils.plotting_settings.
-
     """
     ## 0. prepare log grid
     # Fixed logarithmic interpolation grid: 10, 100, 1000, ..., 10,000,000 years
@@ -437,37 +436,255 @@ def main_frequentielijn(files, watersysteem = None, simulation_types = None, ref
     # Optionally show all plots at the end
     # plt.show()
 
+def main_frequentielijn_riskeeronly(watersysteem = None, simulation_types = None, reference_name = 'BI2023-totB2023-met', locations = None, colors_dict = colors_dict, save_dir = None, add_bars = False, select_return_period = 10000, add_riskeer = False, files_riskeer = None):
+    """
+    Main function to read and plot hfreq data.
+    
+    Args:
+        files (list): List of file paths to (h)freq.txt files. These can be paths inside zip files, in the format "zip_path\\internal_path".
+        watersysteem (str): Name of the water system (e.g., "HollandscheIJssel", "Rijntakken")
+                           If None, gives error
+        simulation_types (list): List of simulation type filters (e.g., ["2017-totaal-zon_WS", "2023-fysica-met_HBN"])
+                                If None or empty, all simulations are included
+        location_type (str or list) : Type of location (oever/as) to filter by.
+                                If none is given, both location types are included.
+        locations (str or list): Location(s) to filter by. Can be location IDs (e.g., "as_0001")
+                                or location codes from parent folder (e.g., "as" from folder ending in "_as")
+                                If none is given, all locations are included
+        colors_dict (dict) : Maps simulation_type to a plotting color.
+                                If none is given, a standard template is used which is read from utils.plotting_settings.
+    """
+    ## 0. prepare log grid
+    # Fixed logarithmic interpolation grid: 10, 100, 1000, ..., 10,000,000 years
+    interp_T_grid = np.logspace(1, 8, 8)
+
+    ## 1. Prepare data structure for storing data by location and simulation type
+    data_by_location_riskeer = defaultdict(dict)
+    for file in files_riskeer:
+        zip_index = file.lower().find(".zip")
+        internal_path = file[zip_index + 5:]
+
+        p = PurePosixPath(internal_path)
+
+        simulation_folder = p.parts[1]
+
+        location = simulation_folder.split("_BI")[0]
+        simulation_type = "BI" + simulation_folder.split("_BI")[1]
+
+        # Remove parameter suffix (_ws, _hs, etc.)
+        sim_type_base = simulation_type[:-3]
+
+        if (locations is None or location in locations):
+            print("ADDING Riskeer:", location, simulation_type)
+            simulation_type = sim_type_base + "-riskeer" + simulation_type[-3:]
+            data_by_location_riskeer[location][simulation_type] = read_design_table(file)
+
+    ## 2. Create separate plot for each location
+    for location, computations in sorted(data_by_location_riskeer.items()):
+        
+
+        has_reference = bool(reference_name)
+        parameter_name = list(computations.keys())[0].split('_')[-1]
+        ylabel = parameters[parameter_name][0]
+
+        ## 2.1 Prepare figure and axes
+        if has_reference:
+            fig, (ax, ax_diff) = plt.subplots(
+                2, 1, figsize=(8, 8), sharex=True,
+                gridspec_kw={'height_ratios': [3, 2]}
+            )
+            ax.axvspan(10, 100, alpha=0.1, color = 'gray')  # licht grijs tussen 10 en 100 jaar
+            ax_diff.axvspan(10, 100, alpha=0.1, color = 'gray')  # licht grijs tussen 10 en 100 jaar
+
+            ylabel_diff = parameters[parameter_name][1]
+            ylabel_diff_unit = parameters[parameter_name][4]
+
+            if set(['BI2017-totB2017-met','BI2023-totB2023-met', 'BI2017-totB2017-zon','BI2023-totB2023-zon']) == set(simulation_types) and set(reference_name) == set(['BI2017-totB2017-zon','BI2017-totB2017-met']):
+                filename_addition = "totaal"
+                ylabel_plot_diff = rf"Verschil in {ylabel_diff} ({ylabel_diff_unit})"
+                diff_simulations = ['BI2023-totB2023-zon','BI2023-totB2023-met']
+            # elif set(['BI2017-totB2017-met','BI2023-totB2023-met', 'BI2017-totB2017-zon','BI2023-totB2023-zon']) == set(simulation_types) and reference_name == 'BI2023-totB2023-zon':
+            #     filename_addition = "totaal-boi-zon"
+            #     ylabel_plot_diff = rf"Verschil in {ylabel_diff} t.o.v. BOI-zon ({ylabel_diff_unit})"
+            #     diff_simulations = ['BI2017-totB2017-zon','BI2023-totB2023-zon']
+            else:
+                filename_addition = "detail-zon"
+                ylabel_plot_diff = rf'Verschil in {ylabel_diff} ({ylabel_diff_unit})'+'\nBOI totaal - BOI met WBI fysica / statistiek'
+                diff_simulations = simulation_types
+
+        else:
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax_diff = None  # no difference plot
+            ax.axvspan(10, 100, alpha=0.2, color = 'gray')  # licht grijs tussen 10 en 100 jaar
+
+        ## 2.2 Prepare reference data (grouped by 'met' and 'zon')
+        group_references = {}  # {'met': (ref_T, ref_wl, color, linestyle, linewidth)}
+        
+        if has_reference:
+
+            # Always treat reference_name as list
+            if isinstance(reference_name, str):
+                reference_name = [reference_name]
+
+            for ref in reference_name:
+
+                # Determine group
+                group = get_group(ref)
+
+                key = f"{ref}-riskeer_{parameter_name}"
+                if key not in computations:
+                    continue
+
+                ref_frequency, ref_wl = computations[key]
+                ref_T = 1.0 / ref_frequency
+
+                sort_idx = np.argsort(ref_T)
+                ref_T = ref_T[sort_idx]
+                ref_wl = ref_wl[sort_idx]
+
+                # Store reference curve AND its style
+                color = colors_dict[ref][0]
+                linewidth = colors_dict[ref][1]
+                linestyle = colors_dict[ref][2]
+                order = order_dict[legend_dict[ref]]
+
+                group_references[group] = (ref_T, ref_wl, color, linestyle, linewidth, order)
+        
+        ## 2.4 Plotting routine
+        interpolated_curves = {}  # store {computation_name: wl_interp} for differencing
+
+        for computation_name, (frequency, water_level) in sorted(computations.items()):
+            color, linewidth, linestyle = colors_dict.get(computation_name.split('_')[0].split('-riskeer')[0])
+            legend_name = legend_dict[computation_name.split('_')[0].split('-riskeer')[0]]
+            order = order_dict[legend_dict[computation_name.split('_')[0].split('-riskeer')[0]]]
+
+            return_period = 1.0 / frequency
+
+            if computation_name.split('_')[0].split('-riskeer')[0] in simulation_types:
+                return_period_plot, water_level_plot = add_interpolated_return_period_point(1/return_period, water_level, select_return_period)
+
+                ax.plot(return_period_plot, water_level_plot,
+                        label=legend_name, linewidth=linewidth,
+                        color=color, linestyle=linestyle, zorder=order)
+
+                # Interpolate onto fixed grid and store
+                sort_idx = np.argsort(return_period)
+                interpolated_curves[computation_name] = (
+                    np.interp(np.log(1/interp_T_grid), np.log(return_period[sort_idx]), water_level[sort_idx]),
+                    color, linewidth, linestyle, legend_name, order
+                )
+
+        ## 2.4.2 Plot differences in ax_diff
+        if has_reference and ax_diff is not None:
+            for temp_ref_name in reference_name:    
+                ref_key = f"{temp_ref_name}-riskeer_{parameter_name}"
+                
+                if ref_key in interpolated_curves:
+                    combined_ref = interpolated_curves[ref_key][0]
+                    for computation_name, (wl_interp, color, linewidth, linestyle, legend_name, order) in interpolated_curves.items():
+                        if get_group(computation_name) == get_group(ref_key):
+                            diff = wl_interp - combined_ref
+                            ax_diff.plot(interp_T_grid, diff,
+                                        color=color, linestyle=linestyle, linewidth=linewidth,
+                                        label=legend_name, zorder=order)
+                else:
+                    print(f"WARNING: reference key '{ref_key}' not found. Keys present: {list(interpolated_curves.keys())}")
+
+        # 2.4.6 titel met locatie en/of watersysteem
+        title = f"Locatie: {location}"
+        if watersysteem:
+            title += f" - {watersysteem}"
+
+        ax.set_title(title, fontsize=12, fontweight='bold')
+
+        # 2.4.7 legenda, iets ingewikkelder dan normaal, we willen een specifieke volgorde van legenda items
+        handles, labels = ax.get_legend_handles_labels()
+        items = [(order_dict.get(label, 999), label, handle)
+                for label, handle in zip(labels, handles)]
+        items.sort(key=lambda x: x[0])
+
+        sorted_labels = [item[1] for item in items]
+        sorted_handles = [item[2] for item in items]
+
+        legend = ax.legend(sorted_handles, sorted_labels, loc='upper left', fontsize=7)
+        legend.set_zorder(11)
+
+        ax.set_xscale('log')
+        x_min_lim, x_max_lim = 10, 1e6
+        ax.set_xlim(left=x_min_lim, right=x_max_lim)
+        # Set y-limits based on plotted values within xlim, with 20% margin
+        x_min_lim, x_max_lim = 10, 1e6
+        visible_y = []
+        for line in ax.get_lines():
+            xdata, ydata = line.get_xdata(), line.get_ydata()
+            mask = (xdata >= x_min_lim) & (xdata <= x_max_lim) & np.isfinite(ydata)
+            visible_y.extend(ydata[mask])
+
+        if visible_y:
+            y_min, y_max = np.min(visible_y), np.max(visible_y)
+            y_margin = (y_max - y_min) * 0.2
+            ax.set_ylim(bottom=y_min - y_margin, top=y_max + y_margin)
+        ax.set_ylabel(ylabel_dict[parameter])
+        ax.set_xlabel('Terugkeertijd (jaar)')
+        ax.tick_params(labelbottom=True)
+        ax.grid(True, which='both', alpha=0.3)
+
+        ax_diff.set_ylabel(f'Verschil in {ylabel_dict[parameter]}')
+        ax_diff.set_xlabel('Terugkeertijd (jaar)')
+        ax_diff.grid(True, which='both', alpha=0.3)
+
+        ## 2.5 plot afronden en opslaan
+        plt.tight_layout()
+
+        # naam maken en directory controlerenen aanmaken indien nodig
+        filename = f"{location}_{parameter_name}_{filename_addition}.png"
+        os.makedirs(save_dir, exist_ok=True)
+
+        plt.savefig(os.path.join(save_dir, filename), dpi=150, bbox_inches='tight')
+        print(f"Plot saved as '{filename}'")
+
+        plt.close()
+
 if __name__ == "__main__":
     # Example usage:
     # 0.1 instellingen voor dit script
-    sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    # sp_base_path = r"c:\Users\Kuiper\OneDrive - HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
-    project_fase = 'WP02a Beoordelen Kust (dijken)'
-    som_versie = 'oeverlocaties - concept_20260413'
+    # sp_base_path = r"c:\Users\BEMC\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    sp_base_path = r"c:\Users\Molendijk\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering"
+    project_fase = 'WP02a Beoordelen Oosterschelde'
+    som_versie = 'oeverlocaties - concept_20260621'
     watersysteem = '' # leeg laten als er maar 1 watersysteem is voor dit WP, b.v. Meren kan dit MRN_Grevelingen zijn, maar Rijntakken heeft alleen de Rijntakken - dus dan leeg.
-    zip_file_name = "HydraNL_BI2023_KST_Dijken_oever_stndrd.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
+    zip_file_name = "HydraNL_BI2023_KST_Oosterschelde_oever.zip" # naam van het zip bestand waarin de data staat, b.v. "HydraNL_BI2023_BOR_Rijn_as.zip" of "HydraNL_BI2023_BOR_Meren.zip"
 
-    parameter = 'go' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs'
+    parameter = 'ws' # parameter waarvoor we de frequentielijnen willen plotten, b.v. 'ws' of 'hs', 'tp', 'go', 'ts'
     locations = None # None = alle locaties, maar kan ook individuele locaties hebben in een lijst b.v. ['vk204b_0234_MM_hm0526'], ['as_0061_RH_km0854']
 
     # Riskeer
-    add_riskeer = False  # riskeer bar toevoegen
-    som_versie_riskeer = "aslocaties - concept_20260407" # versie van de som waarin de riskeer berekeningen staan
-    zip_file_name_riskeer = "HydraRing_BI2023_KST_Dijken_as.zip" # naam van het zip bestand waarin de riskeer data staat
+    riskeer_only = True # Als riskeer_only op True staat, wordt alleen de functie main_frequentielijnen_riskeeronly aangeroepen.
+    add_riskeer = True  # riskeer bar toevoegen
+    som_versie_riskeer = "aslocaties - concept_20260609" # versie van de som waarin de riskeer berekeningen staan
+    zip_file_name_riskeer = "HydraRing_BI2023_KST_Oosterschelde_as.zip" # naam van het zip bestand waarin de riskeer data staat
 
     # locatie van opslaan van figuren    
-    save_dir = os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl_testRiskeerstndrd") #"fl2", opslaan in een submap van de map 
+    save_dir = r"C:\Users\Molendijk\HKV\PR5542.10 - BOI - Verschilanalyse Hydraulische Belastingen - Projectuitvoering - Projectuitvoering\WP02a Beoordelen Oosterschelde\Visualisaties\freqlijnen aslocaties"# r"C:\Users\Molendijk\Documents\Bestanden lokaal 5542.10\Visualisaties" # os.path.join(sp_base_path, project_fase, "Visualisaties", som_versie, watersysteem, "fl_testRiskeerstndrd") #"fl2", opslaan in een submap van de map 
 
     # 0.2 Bestanden ophalen, we listen gewoon alle bestanden uit de zip met een bepaalde parameter
-    files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
+    if riskeer_only == True:
+        files = [] # get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
+    else:
+        files = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie, watersysteem = watersysteem, zip_file_name = zip_file_name, parameter = parameter) 
     files_riskeer = get_parameter_file_paths(sp_base_path = sp_base_path, project_fase = project_fase, som_versie = som_versie_riskeer, watersysteem = watersysteem, zip_file_name = zip_file_name_riskeer, parameter = parameter, riskeer = True) if add_riskeer else []
 
-    # 1. eerste frequentielijn plot actie met totaal BOI WBI vergelijking, zowel met als zonder modelonzekerheid
-    simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
-    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2017-totB2017-zon','BI2017-totB2017-met'],
+    if riskeer_only == True:
+        simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
+        main_frequentielijn_riskeeronly(watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2017-totB2017-zon', 'BI2017-totB2017-met'],
                         locations = locations, save_dir = save_dir, add_bars = True, select_return_period = 10000, add_riskeer = add_riskeer, files_riskeer = files_riskeer)
+    else:
+        # 1. eerste frequentielijn plot actie met totaal BOI WBI vergelijking, zowel met als zonder modelonzekerheid
+        simulation_types = ['BI2017-totB2017-met','BI2023-totB2023-met','BI2017-totB2017-zon','BI2023-totB2023-zon'] # welke simulatie types we willen hebbem
+        main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = ['BI2017-totB2017-zon','BI2017-totB2017-met'],
+                            locations = locations, save_dir = save_dir, add_bars = True, select_return_period = 10000, add_riskeer = add_riskeer, files_riskeer = files_riskeer, riskeer_only = riskeer_only)
 
-    # 2. tweede frequentielijn plot actie met detail BOI vergelijking, waarbij we de verschillende BOI simulaties vergelijken met elkaar (dus zonder de WBI2017 referentie)
-    simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
-    main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
-                        locations = locations, save_dir = save_dir)
+        # 2. tweede frequentielijn plot actie met detail BOI vergelijking, waarbij we de verschillende BOI simulaties vergelijken met elkaar (dus zonder de WBI2017 referentie)
+        simulation_types = ['BI2023-totB2023-zon','BI2023-fysB2017-zon', 'BI2023-stkB2017-zon'] # welke simulatie types we willen hebben voor de detail-boi-zon vergelijking, alleen de zon simulaties omdat we vergelijken met de zon referentie
+        main_frequentielijn(files, watersysteem = watersysteem, simulation_types = simulation_types, reference_name = 'BI2023-totB2023-zon',
+                            locations = locations, save_dir = save_dir)
